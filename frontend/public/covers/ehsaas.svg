@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640">
+  <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#12304f"/><stop offset="1" stop-color="#426d9b"/></linearGradient></defs>
+  <rect width="1200" height="640" fill="url(#g)"/>
+  <circle cx="600" cy="300" r="250" fill="none" stroke="#f6d77c" stroke-opacity=".22" stroke-width="2"/>
+  <circle cx="600" cy="300" r="190" fill="none" stroke="#f6d77c" stroke-opacity=".32" stroke-width="2"/>
+  <path d="M0 505q300-170 600 0t600 0v135H0z" fill="#0b1e32" opacity=".55"/>
+  <path d="M200 110 340 500M1000 110 860 500" stroke="#f6d77c" stroke-opacity=".3" stroke-width="3"/>
+  <text x="600" y="280" text-anchor="middle" fill="#fff" font-family="Georgia,serif" font-size="112" font-weight="bold" letter-spacing="8">EHSAAS</text>
+  <text x="600" y="350" text-anchor="middle" fill="#f6d77c" font-family="Arial,sans-serif" font-size="27" letter-spacing="6">CULTURAL EXCHANGE · PCTE</text>
+</svg>

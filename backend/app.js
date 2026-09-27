@@ -1,0 +1,69 @@
+const path = require('path');
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const compression = require('compression');
+const cookieParser = require('cookie-parser');
+
+const authRoutes = require('./routes/authRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const societyRoutes = require('./routes/societyRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const { manageRouter: competitionManageRoutes } = require('./routes/competitionEventRoutes');
+const formRoutes = require('./routes/formRoutes');
+const { nestedRouter: teamNestedRoutes, flatRouter: teamFlatRoutes } = require('./routes/teamRoutes');
+const certificateRoutes = require('./routes/certificateRoutes');
+const volunteerRoutes = require('./routes/volunteerRoutes');
+const mediaRoutes = require('./routes/mediaRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const youtubeRoutes = require('./routes/youtubeRoutes');
+
+const { notFound, errorHandler } = require('./middleware/errorHandler');
+
+const app = express();
+
+app.use(helmet());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true,
+  })
+);
+app.use(compression());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser(process.env.COOKIE_SECRET));
+if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
+
+// Platform-uploaded gallery media, served statically — never hotlinked from elsewhere
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.get('/api/health', (req, res) => res.json({ success: true, message: 'EventPulse API is running', time: new Date() }));
+
+app.use('/api/auth', authRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/societies', societyRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/competitions', competitionManageRoutes);
+app.use('/api/competitions/:competitionEventId', teamNestedRoutes);
+app.use('/api/competitions', teamFlatRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/forms', formRoutes);
+app.use('/api/certificates', certificateRoutes);
+app.use('/api/volunteers', volunteerRoutes);
+app.use('/api/media', mediaRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/youtube', youtubeRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+module.exports = app;

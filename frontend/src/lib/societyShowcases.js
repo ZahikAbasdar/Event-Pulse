@@ -1,0 +1,112 @@
+export const FESTIVAL_SHOWCASES = {
+  koshish: {
+    eyebrow: 'Festaweek',
+    title: 'Experience the energy',
+    description:
+      'Festaweek (Koshish) is the heartbeat of PCTE: its premier annual cultural and literary festival, celebrating creativity, confidence and the vibrant spirit of campus life.',
+    galleryTitle: 'Highlights Gallery',
+    gallery: [
+      { title: 'Nukkad Natak', category: 'Cultural Activities', description: 'Street plays use dramatic storytelling to bring important ideas into the open.', image: '/covers/koshish-street-theatre.svg' },
+      { title: 'Style and Glamour', category: 'Fashion Show', description: 'A runway showcase for student style, confidence and creative themes.', image: '/covers/koshish-runway.svg' },
+      { title: 'Creative Expressions', category: 'Literary & Creative Arts', description: 'Debate, writing and creative events put ideas and quick thinking in the spotlight.', image: '/covers/koshish-creative.svg' },
+      { title: 'Charisma and Confidence', category: 'Mr & Miss Punjab', description: 'A flagship stage event celebrating confidence, leadership and cultural pride.', image: '/covers/koshish-pageant.svg' },
+      { title: 'Live Performance', category: 'Star Night', description: 'A high-energy festival finale built around live music and performance.', image: '/covers/koshish-star-night.svg' },
+    ],
+    spectrumTitle: 'Inside the line-up',
+    spectrum: [
+      {
+        title: 'Cultural Spotlight',
+        category: 'Stage Performances',
+        description: 'From Nukkad Natak and Mono Acting to Fashion Show and Indian and International Group Dance, performers bring rhythm, drama and style to the stage.',
+        image: '/covers/koshish-street-theatre.svg',
+      },
+      {
+        title: 'Literary & Creative Arts',
+        category: 'Brain & Canvas',
+        description: 'British Parliamentary Debate, Group Discussion, Business Plan, quizzes, Extempore, JAM, Dumb Charades, Picto, Photography, Videography, AI & Branding and Canvas Painting.',
+        image: '/covers/koshish-creative.svg',
+      },
+      {
+        title: 'PCTE Mr & Miss Punjab',
+        category: 'Glamour & Charisma',
+        description: 'A showcase of confidence, charisma, cultural pride, leadership and stage presence.',
+        image: '/covers/koshish-pageant.svg',
+      },
+      {
+        title: 'The Star Night',
+        category: 'Grand Finale',
+        description: 'The festival finale brings the campus together for a live stage performance by a guest artist.',
+        image: '/covers/koshish-star-night.svg',
+      },
+    ],
+    standingsTitle: 'Live Trophy Standings',
+    standingsNote: 'Department totals supplied in the PCTE festival description. These are reference standings, not connected to a live scoring feed.',
+    standings: [
+      { department: 'Institute of Engineering & Tech', points: 850, wins: ['Department profile highlights not provided'] },
+      { department: 'Business Management (BBA/MBA)', points: 920, wins: ['1st in Mr. PCTE', '2nd in Fashion', '1st in Rangoli'] },
+      { department: 'Pharmaceutical Sciences', points: 710, wins: ['Department profile highlights not provided'] },
+      { department: 'Hotel Management & Tourism', points: 780, wins: ['Department profile highlights not provided'] },
+    ],
+    ctaTitle: 'Want to represent your department?',
+    ctaText: 'Connect with the student organizing committee or activity coordinator to learn how to represent your class at Koshish.',
+    ctaUrl: 'https://pcte.edu.in/enquire',
+    officialGalleryUrl: 'https://pcte.edu.in/photo-tour',
+    officialFestivalUrl: 'https://pcte.edu.in/life/koshish',
+  },
+  turf: {
+    eyebrow: 'Inter-School Fest',
+    title: 'Turf',
+    description:
+      'TURF brings young minds and performers from schools across the region together for artistic expression, intellectual competition and spirited performances.',
+    galleryTitle: 'Turf Highlights',
+    gallery: [
+      { title: 'Cultural Performances', category: 'Cultural Events', description: 'Students share cultural traditions through performance.', image: '/covers/turf-cultural.svg' },
+      { title: 'Creative Arts', category: 'Creative Arts', description: 'A showcase for innovative ideas and hands-on creative skills.', image: '/covers/turf-creative.svg' },
+      { title: 'Literary Battles', category: 'Literary Events', description: 'Debates and discussions put ideas, confidence and reasoning to the test.', image: '/covers/turf-literary.svg' },
+    ],
+    spectrumTitle: 'Explore the event arenas',
+    spectrum: [
+      { title: 'Literary & Debate', category: 'Arenas', description: 'English Debate, JAM (Just A Minute) and The Mastermind Quiz challenge speakers and curious minds.', image: '/covers/turf-literary.svg' },
+      { title: 'Culinary & Bakery', category: 'Arenas', description: 'A festival arena for food craft, presentation and culinary creativity.', image: '/covers/turf-creative.svg' },
+      { title: 'Stage Performance', category: 'Arenas', description: 'A platform for school performers to present their talent to a live audience.', image: '/covers/turf-cultural.svg' },
+    ],
+    stats: [
+      { value: '50+', label: 'Participating schools' },
+      { value: '1,000+', label: 'High-school students' },
+      { value: 'Rs 1 lakh+', label: 'Total cash prizes' },
+    ],
+    ctaTitle: 'Is your school ready to compete?',
+    ctaText: 'Contact PCTE to ask about the next Turf festival and school contingent registration.',
+    ctaUrl: 'https://pcte.edu.in/enquire',
+    officialGalleryUrl: 'https://pcte.edu.in/photo-tour',
+    officialFestivalUrl: 'https://pcte.edu.in/life/turf',
+  },
+  ehsaas: {
+    eyebrow: 'International Youth Fest',
+    title: 'Ehsaas',
+    description:
+      'EHSAAS is PCTE’s inter-college stage for student voices, dancers and thinkers—a creative festival that brings institutions together through performance, learning and friendly competition.',
+    galleryTitle: 'Star Stage Gallery',
+    gallery: [
+      { title: 'Main Stage Cultural', category: 'Cultural Stage', description: 'A lively stage for student cultural performances.', image: '/covers/ehsaas-stage.svg' },
+      { title: 'Literary Arts', category: 'Literary & Creative', description: 'Students bring their ideas and literary expression to the festival.', image: '/covers/ehsaas-literary.svg' },
+      { title: 'Prize Distribution', category: 'Celebrating Winners', description: 'Recognizing achievement across the festival competitions.', image: '/covers/ehsaas-awards.svg' },
+    ],
+    spectrumTitle: 'Explore the competitions',
+    spectrum: [
+      { title: 'Music & Band Battle', category: 'Interactive Arena', description: 'A music showcase spanning band performances, solo singing and instrumental performances.', image: '/covers/ehsaas-stage.svg' },
+      { title: 'Haute Couture', category: 'Creative Stage', description: 'A runway arena for design, style and stage presentation.', image: '/covers/ehsaas-awards.svg' },
+      { title: 'Global Discourse', category: 'Literary & Debate', description: 'A platform for discussion, ideas and exchange between participating institutions.', image: '/covers/ehsaas-literary.svg' },
+    ],
+    performers: [
+      { name: 'Gurdas Maan', detail: '2018 performance · Punjabi folk' },
+      { name: 'Jassie Gill', detail: '2023 performance · Punjabi pop' },
+      { name: 'Babbal Rai', detail: '2024 performance · Punjabi pop' },
+    ],
+    ctaTitle: 'Want to compete at Ehsaas?',
+    ctaText: 'Contact PCTE to ask about registration and the student coordination team for future festivals.',
+    ctaUrl: 'https://pcte.edu.in/enquire',
+    officialGalleryUrl: 'https://pcte.edu.in/photo-tour',
+    officialFestivalUrl: 'https://pcte.edu.in/life/ehsaas',
+  },
+};

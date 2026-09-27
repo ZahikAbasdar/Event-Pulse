@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 antialiased transition-colors duration-300;
+}
+
+.dark body {
+  @apply bg-gray-950 text-gray-100;
+}
+
+/* ---------- Liquid Glass ambient background blobs ---------- */
+.liquid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.liquid-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.55;
+  animation: liquidFloat 18s ease-in-out infinite;
+}
+.dark .liquid-blob {
+  opacity: 0.35;
+}
+@keyframes liquidFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(4%, 6%) scale(1.08); }
+  66% { transform: translate(-3%, -4%) scale(0.95); }
+}
+
+@layer components {
+  /* ---------- Liquid Glass card: frosted, refractive, specular highlight ---------- */
+  .glass-card {
+    @apply relative overflow-hidden rounded-[28px] border border-white/40 bg-white/40 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_32px_rgba(31,20,10,0.12),inset_0_1px_0_rgba(255,255,255,0.6)] transition-all duration-300;
+  }
+  .dark .glass-card {
+    @apply border-white/10 bg-white/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)];
+  }
+  /* glossy top-edge specular highlight, the signature "liquid glass" sheen */
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,255,255,0) 35%, rgba(255,255,255,0) 65%, rgba(255,255,255,0.35));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .dark .glass-card::before {
+    background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0) 35%, rgba(255,255,255,0) 65%, rgba(255,255,255,0.08));
+  }
+  .glass-card:hover {
+    @apply shadow-[0_16px_48px_rgba(31,20,10,0.18),inset_0_1px_0_rgba(255,255,255,0.7)];
+  }
+
+  /* ---------- Liquid Glass modal (frosted, floats above a dimmed/blurred backdrop) ---------- */
+  .glass-modal-backdrop {
+    @apply fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4;
+  }
+  .glass-modal {
+    @apply glass-card w-full max-w-md !rounded-[32px] !bg-white/60 p-7 dark:!bg-gray-900/60;
+    animation: glassModalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes glassModalIn {
+    from { opacity: 0; transform: scale(0.92) translateY(12px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-maroon-500 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_4px_16px_rgba(122,31,43,0.35)] transition-all hover:bg-maroon-600 hover:shadow-[0_6px_20px_rgba(122,31,43,0.45)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-white/40 bg-white/50 px-5 py-2.5 text-sm font-semibold text-gray-700 backdrop-blur-xl transition-all hover:border-maroon-300 hover:text-maroon-600 active:scale-[0.97] dark:border-white/10 dark:bg-white/[0.06] dark:text-gray-200;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 px-5 py-2.5 text-sm font-semibold text-maroon-900 shadow-[0_4px_16px_rgba(201,162,39,0.4)] transition-all hover:shadow-[0_6px_20px_rgba(201,162,39,0.5)] active:scale-[0.97];
+  }
+
+  .input-field {
+    @apply w-full rounded-2xl border border-white/50 bg-white/50 px-4 py-2.5 text-sm text-gray-900 outline-none backdrop-blur-xl transition-all placeholder:text-gray-400 focus:border-maroon-400 focus:ring-4 focus:ring-maroon-400/15 dark:border-white/10 dark:bg-white/[0.06] dark:text-gray-100 dark:focus:ring-maroon-500/20;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-maroon-300/60;
+}
