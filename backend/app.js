@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -22,6 +23,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const youtubeRoutes = require('./routes/youtubeRoutes');
+const { UPLOAD_DIR } = require('./middleware/upload');
 
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
@@ -41,7 +43,7 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
 // Platform-uploaded gallery media, served statically — never hotlinked from elsewhere
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'EventPulse API is running', time: new Date() }));
 
@@ -62,6 +64,15 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/youtube', youtubeRoutes);
+
+const frontendIndex = path.resolve(__dirname, '..', 'frontend', 'dist', 'index.html');
+if (fs.existsSync(frontendIndex)) {
+  app.use(express.static(path.dirname(frontendIndex)));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(frontendIndex);
+  });
+}
 
 app.use(notFound);
 app.use(errorHandler);

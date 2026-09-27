@@ -208,6 +208,53 @@ set `VITE_API_PROXY_TARGET` before starting Vite.
 - **Public feedback:** open an organizer-generated link or scan its QR code;
   participants do not need to sign in.
 
+## ☁️ Deploy to Render + MongoDB Atlas
+
+The repository includes [`render.yaml`](render.yaml), which configures a
+single-origin Render web service: Express serves the built React app, the API,
+and Socket.IO from the same URL. A persistent disk is mounted for uploaded
+event media and voice recordings. **A Render Starter web service is required
+for the persistent disk.** Configure a MongoDB Atlas database before creating
+the Render Blueprint.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ZahikAbasdar/Event-Pulse)
+
+1. Create an Atlas cluster and database user. In Atlas Network Access, allow
+   the outbound IP ranges shown for your Render service; avoid opening database
+   access to the entire internet where possible. Copy the Atlas connection URI
+   and substitute the database user's password safely.
+2. In Render, choose **New → Blueprint**, connect this GitHub repository, and
+   deploy the `render.yaml` blueprint from the `main` branch.
+3. Add the requested private environment values in Render's dashboard:
+   `MONGO_URI`, `OWNER_NAME`, `OWNER_EMAIL`, `OWNER_PASSWORD`,
+   `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and
+   `TWILIO_VERIFY_SERVICE_SID`. Render generates `JWT_SECRET` and
+   `COOKIE_SECRET`. Never put secrets in Git or in client-side variables.
+4. Wait for the build and `/api/health` health check to pass. The default
+   service URL is [`https://eventpulse.onrender.com`](https://eventpulse.onrender.com).
+   If you change the Render service name, update `CLIENT_URL` to the exact
+   deployed HTTPS origin, then redeploy.
+5. Initialize the empty production database exactly once from the Render
+   service Shell:
+
+   ```bash
+   npm run seed --prefix backend
+   ```
+
+   The seed uses the Render `OWNER_*` values. It **deletes and recreates**
+   seeded PCTE collections; never run it to update a database with data that
+   must be preserved. For a populated database, use the non-destructive
+   `npm run seed:jasmine --prefix backend` only if that event update is needed.
+6. Verify the live URL, organizer login, feedback QR link, media upload, and
+   Socket.IO updates. Send a real OTP only after valid Twilio Verify credentials
+   and any Twilio trial recipient verification are configured.
+
+The included disk starts at 1 GB. Monitor its usage and configure external
+backups; a persistent disk is not itself a backup. Do not use an ephemeral
+free-tier filesystem for feedback audio or uploaded media. Render, MongoDB
+Atlas, and Twilio account setup and billing are controlled by their providers;
+this repository cannot create those accounts or enter account secrets for you.
+
 ## 📲 Real phone verification
 
 Participant login depends on **real Twilio Verify credentials**. Create a

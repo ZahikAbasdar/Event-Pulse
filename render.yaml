@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: eventpulse
+    runtime: node
+    plan: starter
+    buildCommand: npm ci --prefix backend && npm ci --prefix frontend --include=dev && npm run build --prefix frontend
+    startCommand: npm start --prefix backend
+    healthCheckPath: /api/health
+    disk:
+      name: eventpulse-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        value: https://eventpulse.onrender.com
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: OWNER_NAME
+        sync: false
+      - key: OWNER_EMAIL
+        sync: false
+      - key: OWNER_PASSWORD
+        sync: false
+      - key: MEDIA_UPLOAD_DIR
+        value: /var/data/uploads
+      - key: VOICE_FEEDBACK_DIR
+        value: /var/data/feedback-audio
+      - key: MAX_UPLOAD_MB
+        value: 15
+      - key: MAX_VOICE_FEEDBACK_MB
+        value: 25
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_VERIFY_SERVICE_SID
+        sync: false
