@@ -49,23 +49,6 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
-  const acceptAuthResponse = (data) => {
-    localStorage.setItem('ep_token', data.token);
-    localStorage.setItem('ep_user', JSON.stringify(data.user));
-    setUser(data.user);
-    return data.user;
-  };
-
-  const verifyPhoneOtp = async (payload) => {
-    const { data } = await api.post('/auth/phone-otp/verify', payload);
-    return acceptAuthResponse(data);
-  };
-
-  const startPhoneOtp = async (phone, intent) => {
-    const { data } = await api.post('/auth/phone-otp/start', { phone, intent });
-    return data;
-  };
-
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -81,7 +64,7 @@ export function AuthProvider({ children }) {
   const isOrganizer = !!user && ORGANIZER_ROLES.includes(user.role);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, startPhoneOtp, verifyPhoneOtp, logout, refreshMe, isOrganizer }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshMe, isOrganizer }}>
       {children}
     </AuthContext.Provider>
   );

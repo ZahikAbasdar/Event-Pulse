@@ -27,8 +27,6 @@ const userSchema = new mongoose.Schema(
     section: { type: String, trim: true },
     block: { type: String, enum: ['ET', 'MT', 'T Pharmacy', 'HM', null], default: null },
     phone: { type: String, trim: true },
-    phoneVerified: { type: Boolean, default: false },
-    emailVerified: { type: Boolean, default: false },
     googleSubject: { type: String, default: null, select: false },
     avatarUrl: { type: String, default: null },
 
@@ -60,7 +58,6 @@ userSchema.methods.toSafeObject = function toSafeObject() {
 
 userSchema.index({ organization: 1, role: 1 });
 userSchema.index({ googleSubject: 1 }, { unique: true, sparse: true });
-userSchema.index({ phone: 1 }, { unique: true, partialFilterExpression: { phoneVerified: true } });
 
 module.exports = mongoose.model('User', userSchema);
 module.exports.ROLES = ROLES;

@@ -5,7 +5,6 @@ import { Mail, Lock, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LiquidBackground from '../components/LiquidBackground';
 import PcteLogo from '../components/PcteLogo';
-import PhoneOtpForm from '../components/PhoneOtpForm';
 
 export default function Login() {
   const { login } = useAuth();
@@ -13,7 +12,6 @@ export default function Login() {
   const location = useLocation();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
-  const [staffSignIn, setStaffSignIn] = useState(false);
 
   const finishSignIn = (user) => {
     toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
@@ -42,25 +40,16 @@ export default function Login() {
         <div className="mb-6 flex flex-col items-center text-center">
           <PcteLogo className="mb-3 h-20 w-20 rounded-2xl shadow-[0_4px_20px_rgba(201,162,39,0.5)]" />
           <h1 className="font-display text-2xl font-bold">Welcome to EventPulse</h1>
-          <p className="mt-1 text-sm text-white/70">Sign in to your PCTE account</p>
+          <p className="mt-1 text-sm text-white/70">Sign in with your email and password</p>
         </div>
 
-        <PhoneOtpForm intent="login" onComplete={finishSignIn} />
-
-        <button
-          type="button"
-          onClick={() => setStaffSignIn((current) => !current)}
-          className="mt-5 w-full text-center text-xs text-white/65 underline underline-offset-4 hover:text-white"
-        >
-          {staffSignIn ? 'Back to participant phone sign-in' : 'Staff sign-in'}
-        </button>
-
-        {staffSignIn && <form onSubmit={handleSubmit} className="mt-5 space-y-4 border-t border-white/15 pt-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/50" size={17} />
             <input
               type="email"
               required
+              autoComplete="email"
               placeholder="Email address"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -72,6 +61,7 @@ export default function Login() {
             <input
               type="password"
               required
+              autoComplete="current-password"
               placeholder="Password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -82,7 +72,7 @@ export default function Login() {
           <button type="submit" disabled={loading} className="btn-gold w-full !py-3">
             <Sparkles size={16} /> {loading ? 'Signing in...' : 'Sign in'}
           </button>
-        </form>}
+        </form>
 
         <p className="mt-6 text-center text-sm text-white/70">
           Don't have an account?{' '}

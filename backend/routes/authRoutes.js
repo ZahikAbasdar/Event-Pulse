@@ -13,21 +13,6 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-const otpStartLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 5,
-  message: { success: false, message: 'Too many verification codes requested. Try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-const otpVerifyLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 10,
-  message: { success: false, message: 'Too many verification attempts. Try again later.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
 router.post(
   '/register',
   authLimiter,
@@ -39,8 +24,6 @@ router.post(
   ctrl.register
 );
 
-router.post('/phone-otp/start', otpStartLimiter, ctrl.startPhoneOtp);
-router.post('/phone-otp/verify', otpVerifyLimiter, ctrl.verifyPhoneOtp);
 router.post(
   '/login',
   authLimiter,

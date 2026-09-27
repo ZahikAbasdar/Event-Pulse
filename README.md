@@ -19,7 +19,7 @@ what is happening — as it happens.
 [Explore the platform](#-the-experience) ·
 [Get started](#-run-eventpulse-locally) ·
 [See the analytics prototype](#-live-analytics-at-a-glance) ·
-[Configure SMS sign-in](#-real-phone-verification)
+[Open the live app](https://eventpulse-9fpd.onrender.com)
 
 </div>
 
@@ -34,7 +34,11 @@ live dashboard.
 
 | 🎟️ For participants | 📊 For organizers | 🛡️ For administrators |
 |---|---|---|
-| Discover festivals and competitions, sign up with verified phone OTP, register for events, and access QR tickets and certificates. | Publish public feedback forms, share QR codes, review audio responses, and monitor event activity in real time. | Manage organization data and roles, review audit activity, and use protected administrative tools. |
+| Discover festivals and competitions, create an account with email and password, register for events, and access QR tickets and certificates. | Publish public feedback forms, share QR codes, review audio responses, and monitor event activity in real time. | Manage organization data and roles, review audit activity, and use protected administrative tools. |
+
+**Live deployment:** [eventpulse-9fpd.onrender.com](https://eventpulse-9fpd.onrender.com)
+
+Participant and staff accounts use email and password. Phone numbers are optional profile information; SMS/OTP sign-in is not used.
 
 > **Visual prototype:** the illustrations below are original, locally stored
 > SVGs designed for this README. They depict the app's UI and chart types; they
@@ -96,12 +100,11 @@ an organizer has uploaded an authorized event photograph.*
 </details>
 
 <details>
-<summary><strong>Verified sign-in & roles</strong></summary>
+<summary><strong>Email/password sign-in & roles</strong></summary>
 
-- Participants create and access accounts through Twilio Verify SMS OTP.
-- Staff access the dashboard with their email and password.
+- Participants and staff sign in with their email and password.
+- Participants can self-register; privileged staff roles must be invited or promoted by an admin.
 - Role- and organization-protected API routes and dashboard pages.
-- No SMS verification bypass or demo participant login is enabled.
 
 </details>
 
@@ -203,8 +206,8 @@ set `VITE_API_PROXY_TARGET` before starting Vite.
 
 - **Organizer/staff:** use the owner email and password configured in
   `backend/.env`.
-- **Participant:** sign up with a phone number in international format, request
-  the SMS, and enter the delivered OTP.
+- **Participant:** create an account using an email address and a password of at
+  least eight characters. Phone and academic profile details are optional.
 - **Public feedback:** open an organizer-generated link or scan its QR code;
   participants do not need to sign in.
 
@@ -233,8 +236,7 @@ before creating the Render Blueprint.
    deploy the `render.yaml` blueprint from the `main` branch.
 4. Add the requested private environment values in Render's dashboard:
    `MONGO_URI`, `OWNER_NAME`, `OWNER_EMAIL`, `OWNER_PASSWORD`,
-   `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `TWILIO_ACCOUNT_SID`,
-   `TWILIO_AUTH_TOKEN`, and `TWILIO_VERIFY_SERVICE_SID`. Render generates
+   `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY`. Render generates
    `JWT_SECRET` and `COOKIE_SECRET`. Never put secrets in Git or in
    client-side variables.
 5. Wait for the build and `/api/health` health check to pass. Use the HTTPS
@@ -251,36 +253,15 @@ before creating the Render Blueprint.
    seeded PCTE collections; never run it to update a database with data that
    must be preserved. For a populated database, use the non-destructive
    `npm run seed:jasmine --prefix backend` only if that event update is needed.
-7. Verify the live URL, organizer login, feedback QR link, media upload, and
-   Socket.IO updates. Send a real OTP only after valid Twilio Verify credentials
-   and any Twilio trial recipient verification are configured.
+7. Verify the live URL, participant registration and sign-in, organizer login,
+   feedback QR link, media upload, and Socket.IO updates.
 
 The free tiers have provider-defined quotas and availability limits. Monitor
 Supabase storage usage and keep independent backups of important recordings.
 The application has no recording deletion endpoint, but no free cloud tier is
 a guarantee of unlimited storage or availability. Render, MongoDB Atlas,
-Supabase, and Twilio account setup and billing are controlled by their
-providers; this repository cannot create those accounts or enter account
-secrets for you.
-
-## 📲 Real phone verification
-
-Participant login depends on **real Twilio Verify credentials**. Create a
-Verify Service in Twilio Console with SMS enabled, then add its credentials to
-the local `backend/.env`:
-
-```dotenv
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
-TWILIO_VERIFY_SERVICE_SID=VA...
-```
-
-Restart the backend after updating the environment. The credentials are
-server-side only: never put them in frontend configuration, screenshots, or
-Git. Twilio trial accounts may require destination numbers to be verified in
-Twilio first. Without these credentials, OTP requests correctly fail with a
-configuration message; the app will not create an account without provider
-verification.
+and Supabase account setup and billing are controlled by their providers; this
+repository cannot create those accounts or enter account secrets for you.
 
 ## 🎙️ Voice feedback storage
 
@@ -328,8 +309,8 @@ See [`backend/.env.example`](backend/.env.example) for the full template.
 | Method | Endpoint | Purpose |
 |---|---|---|
 | `GET` | `/api/health` | API health |
-| `POST` | `/api/auth/phone-otp/start` | Send participant OTP |
-| `POST` | `/api/auth/phone-otp/verify` | Verify OTP and authenticate |
+| `POST` | `/api/auth/register` | Create a participant account with email and password |
+| `POST` | `/api/auth/login` | Sign in with email and password |
 | `GET` | `/api/events` | Discover published events |
 | `POST` | `/api/events/:eventId/register` | Register for an event |
 | `GET` | `/api/dashboard/organizer/charts` | Organizer analytics data |
