@@ -37,7 +37,13 @@ function errorHandler(err, req, res, next) {
   if (err.code === 11000) {
     statusCode = 409;
     const field = Object.keys(err.keyValue || {})[0];
-    message = field ? `${field} already exists` : 'Duplicate resource';
+    message = field === 'email'
+      ? 'An account with this email already exists. Sign in or use a different email.'
+      : field === 'phone'
+        ? 'An account with this phone number already exists.'
+        : field
+          ? `This ${field} is already in use.`
+          : 'This account or resource already exists.';
   }
 
   // Mongoose cast error (bad ObjectId)

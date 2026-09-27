@@ -16,6 +16,7 @@ async function start() {
     throw new Error('Configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY for durable production file storage.');
   }
   await connectDB();
+  await removeObsoleteGoogleSubjectIndex();
 
   const server = http.createServer(app);
   const io = new Server(server, {
@@ -56,6 +57,24 @@ async function start() {
   server.listen(PORT, () => {
     console.log(`[server] EventPulse API listening on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
   });
+}
+
+async function removeObsoleteGoogleSubjectIndex() {
+  const collections = await User.db.db
+    .listCollections({ name: User.collection.name }, { nameOnly: true })
+    .toArray();
+  if (collections.length === 0) return;
+
+  const indexes = await User.collection.indexes();
+  const obsoleteIndex = indexes.find((index) => (
+    index.unique
+    && Object.keys(index.key).length === 1
+    && index.key.googleSubject === 1
+  ));
+  if (obsoleteIndex) {
+    await User.collection.dropIndex(obsoleteIndex.name);
+    console.log(`[db] Removed obsolete unique index: ${obsoleteIndex.name}`);
+  }
 }
 
 start().catch((err) => {

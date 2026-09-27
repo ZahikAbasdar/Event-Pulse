@@ -212,6 +212,17 @@ set `VITE_API_PROXY_TARGET` before starting Vite.
 - **Public feedback:** open an organizer-generated link or scan its QR code;
   participants do not need to sign in.
 
+### Administrator access
+
+Open the [administrator sign-in page](https://eventpulse-9fpd.onrender.com/login)
+and sign in with the private owner email and password configured for the
+deployment (`OWNER_EMAIL` and `OWNER_PASSWORD` in Render). The seeded owner
+account has the `org_admin` role and can access the organization dashboard and
+admin panel. These credentials are intentionally not included in this public
+repository; never publish production administrator passwords in the README.
+For local setup, configure your own owner credentials in the ignored
+`backend/.env` file before seeding.
+
 ## ☁️ Deploy to Render + MongoDB Atlas
 
 The repository includes [`render.yaml`](render.yaml), which configures a

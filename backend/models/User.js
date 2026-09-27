@@ -27,7 +27,6 @@ const userSchema = new mongoose.Schema(
     section: { type: String, trim: true },
     block: { type: String, enum: ['ET', 'MT', 'T Pharmacy', 'HM', null], default: null },
     phone: { type: String, trim: true },
-    googleSubject: { type: String, default: null, select: false },
     avatarUrl: { type: String, default: null },
 
     isActive: { type: Boolean, default: true },
@@ -52,12 +51,10 @@ userSchema.methods.comparePassword = function comparePassword(candidate) {
 userSchema.methods.toSafeObject = function toSafeObject() {
   const obj = this.toObject();
   delete obj.password;
-  delete obj.googleSubject;
   return obj;
 };
 
 userSchema.index({ organization: 1, role: 1 });
-userSchema.index({ googleSubject: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('User', userSchema);
 module.exports.ROLES = ROLES;
