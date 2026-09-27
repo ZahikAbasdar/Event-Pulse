@@ -4,6 +4,7 @@ const Notification = require('../models/Notification');
 const Response = require('../models/Response');
 const Form = require('../models/Form');
 const asyncHandler = require('../middleware/asyncHandler');
+const refreshTicketFeedbackLinks = require('../utils/refreshTicketFeedbackLinks');
 
 function scopeEventFilter(user) {
   const orgFilter = { organization: user.organization };
@@ -54,6 +55,7 @@ exports.organizerDashboard = asyncHandler(async (req, res) => {
 // @route GET /api/dashboard/participant
 exports.participantDashboard = asyncHandler(async (req, res) => {
   const tickets = await Ticket.find({ user: req.user._id }).populate('event', 'title slug startDate venue coverImageUrl status').sort('-createdAt');
+  await refreshTicketFeedbackLinks(tickets, req);
   const notifications = await Notification.find({ recipient: req.user._id }).sort('-createdAt').limit(10);
 
   res.json({

@@ -7,6 +7,8 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { ApiError } = require('../middleware/errorHandler');
 const { logAudit } = require('../utils/audit');
 const { getIO } = require('../utils/socket');
+const getPublicBaseUrl = require('../utils/publicUrl');
+const refreshTicketFeedbackLinks = require('../utils/refreshTicketFeedbackLinks');
 
 // @route POST /api/events/:eventId/register  (participant self-registers, gets a QR ticket)
 exports.registerForEvent = asyncHandler(async (req, res) => {
@@ -35,7 +37,7 @@ exports.registerForEvent = asyncHandler(async (req, res) => {
   let feedbackUrl = null;
   let feedbackQrDataUrl = null;
   if (activeForm) {
-    feedbackUrl = `${process.env.CLIENT_URL}/feedback/${activeForm.shareSlug}?ticket=${code}`;
+    feedbackUrl = `${getPublicBaseUrl(req)}/feedback/${activeForm.shareSlug}?ticket=${encodeURIComponent(code)}`;
     feedbackQrDataUrl = await QRCode.toDataURL(feedbackUrl, { margin: 1, width: 320 });
   }
 
@@ -78,6 +80,7 @@ exports.registerForEvent = asyncHandler(async (req, res) => {
 // @route GET /api/tickets/mine
 exports.myTickets = asyncHandler(async (req, res) => {
   const tickets = await Ticket.find({ user: req.user._id }).populate('event', 'title slug startDate venue coverImageUrl').sort('-createdAt');
+  await refreshTicketFeedbackLinks(tickets, req);
   res.json({ success: true, tickets });
 });
 
@@ -126,7 +129,7 @@ exports.getRegisterPosterQR = asyncHandler(async (req, res) => {
   const event = await Event.findOne({ _id: req.params.eventId, organization: req.user.organization });
   if (!event) throw new ApiError(404, 'Event not found');
 
-  const registerUrl = `${process.env.CLIENT_URL}/events/${event.slug}?action=register`;
+  const registerUrl = `${getPublicBaseUrl(req)}/events/${event.slug}?action=register`;
   const qrDataUrl = await QRCode.toDataURL(registerUrl, { margin: 1, width: 480 });
   res.json({ success: true, url: registerUrl, qrDataUrl });
 });

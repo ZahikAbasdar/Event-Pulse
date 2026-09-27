@@ -13,6 +13,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { getIO } = require('../utils/socket');
 const eventFeedbackQuestions = require('../utils/eventFeedbackQuestions');
 const objectStorage = require('../utils/objectStorage');
+const getPublicBaseUrl = require('../utils/publicUrl');
 
 const VOICE_FEEDBACK_DIR = path.resolve(__dirname, '..', process.env.VOICE_FEEDBACK_DIR || 'private/feedback-audio');
 const VOICE_FEEDBACK_BUCKET = process.env.SUPABASE_VOICE_BUCKET || 'eventpulse-voice';
@@ -69,8 +70,7 @@ exports.ensureEventFeedbackForms = asyncHandler(async (req, res) => {
 
   const links = await Promise.all(events.map(async (event) => {
     const form = formByEvent.get(event._id.toString());
-    const clientUrl = req.get('origin') || process.env.CLIENT_URL || 'http://localhost:5173';
-    const shareUrl = `${clientUrl.replace(/\/$/, '')}/feedback/${form.shareSlug}`;
+    const shareUrl = `${getPublicBaseUrl(req)}/feedback/${form.shareSlug}`;
     const qrCodeDataUrl = await QRCode.toDataURL(shareUrl, { errorCorrectionLevel: 'H', margin: 2, width: 320 });
     return {
       event: { _id: event._id, title: event.title, slug: event.slug },
@@ -300,7 +300,7 @@ exports.submitPublicResponse = asyncHandler(async (req, res) => {
   // ticket as having given feedback — visible on the participant's ticket
   // and usable for organizer completion-rate reporting.
   if (ticketCode) {
-    await Ticket.findOneAndUpdate({ code: ticketCode }, { feedbackSubmitted: true });
+    await Ticket.findOneAndUpdate({ code: ticketCode, event: form.event }, { feedbackSubmitted: true });
   }
 
   // Live-update the organizer dashboard's sentiment/NPS chart the moment
@@ -400,11 +400,15 @@ exports.getVoiceFeedback = asyncHandler(async (req, res) => {
   }).pipe(res);
 });
 
-// @route GET /api/forms/:id/responses/export — every response, downloadable as .xlsx
+// @route GET /api/forms/:id/responses/export?format=xlsx|csv|json
 exports.exportResponsesExcel = asyncHandler(async (req, res) => {
   const form = await findOrganizerForm(req.params.id, req.user);
   if (!form) throw new ApiError(404, 'Form not found');
   const responses = await Response.find({ form: form._id }).sort('-createdAt');
+  const format = String(req.query.format || 'xlsx').toLowerCase();
+  if (!['xlsx', 'csv', 'json'].includes(format)) {
+    throw new ApiError(400, 'Choose an export format: xlsx, csv, or json.');
+  }
 
   const answerQuestions = form.questions.filter((q) => q.type !== 'academic_identifier');
   const rows = responses.map((r) => {
@@ -429,16 +433,55 @@ exports.exportResponsesExcel = asyncHandler(async (req, res) => {
     return row;
   });
 
+  const filename = `${form.title.replace(/[^a-z0-9]+/gi, '-')}-responses`;
+  if (format === 'json') {
+    res.set({
+      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${filename}.json"`,
+    });
+    return res.send(JSON.stringify(rows, null, 2));
+  }
+  if (format === 'csv') {
+    const baseColumns = [
+      'Name',
+      'Roll Number',
+      'Class',
+      'Batch',
+      'Branch',
+      'Section',
+      'Block',
+      'Phone',
+      'Email',
+      'Voice Recording',
+      'Sentiment',
+      'Submitted At',
+    ];
+    const columns = [...new Set([...baseColumns, ...answerQuestions.map((question) => question.text)])];
+    const csvCell = (value) => {
+      const text = value === null || value === undefined ? '' : String(value);
+      const safeText = /^[\s]*[=+\-@]/.test(text) ? `'${text}` : text;
+      return `"${safeText.replace(/"/g, '""')}"`;
+    };
+    const csv = [
+      columns.map(csvCell).join(','),
+      ...rows.map((row) => columns.map((column) => csvCell(row[column])).join(',')),
+    ].join('\r\n');
+    res.set({
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="${filename}.csv"`,
+    });
+    return res.send(`\uFEFF${csv}`);
+  }
+
   const worksheet = XLSX.utils.json_to_sheet(rows);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Responses');
   const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-
   res.set({
     'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'Content-Disposition': `attachment; filename="${form.title.replace(/[^a-z0-9]+/gi, '-')}-responses.xlsx"`,
+    'Content-Disposition': `attachment; filename="${filename}.xlsx"`,
   });
-  res.send(buffer);
+  return res.send(buffer);
 });
 
 // @route GET /api/forms/:id/analytics — NPS breakdown, sentiment counts, word cloud data

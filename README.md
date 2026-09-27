@@ -114,11 +114,15 @@ an organizer has uploaded an authorized event photograph.*
 
 - Ten event-specific questions for generated event feedback forms.
 - Public share links and QR codes; feedback submission does not require login.
+- Scanning an event's QR code opens that event's public feedback form directly
+  on the deployed site.
 - Participant fields for name, roll number, class, batch, block, phone, and
   email.
 - Optional voice feedback stored outside the public uploads folder and
   available to authorized organizers.
 - Feedback analytics refreshed by live events and fallback polling.
+- Authorized organizers can export response data as Excel (`.xlsx`), CSV
+  (`.csv`), or JSON (`.json`) from feedback analytics.
 - Persistent production storage and backups must be configured by the
   deployment owner; see [recording storage](#-voice-feedback-storage).
 
@@ -211,6 +215,28 @@ set `VITE_API_PROXY_TARGET` before starting Vite.
   least eight characters. Phone and academic profile details are optional.
 - **Public feedback:** open an organizer-generated link or scan its QR code;
   participants do not need to sign in.
+
+### Feedback QR, live dashboard, and exports
+
+1. Sign in as an administrator or event manager and open
+   [Feedback Forms](https://eventpulse-9fpd.onrender.com/dashboard/forms).
+2. Each managed event has its own public feedback link and QR code. The QR
+   points to `https://eventpulse-9fpd.onrender.com/feedback/<shareSlug>` in
+   production; scanning it opens the matching feedback form without a login.
+   Ticket feedback QR codes include the participant's ticket reference; opening
+   **My Tickets** refreshes older saved QR links after a deployment.
+3. Participants enter the requested details, answer the event's ten questions,
+   and submit. The response is stored with that event and appears in feedback
+   analytics; the organizer dashboard's four graphs (responses over time,
+   responses per event, rating breakdown, and voice-response breakdown) refresh
+   immediately through Socket.IO, with a 20-second polling fallback. The
+   selected form's response list and analytics also refresh when a new response
+   arrives.
+4. Open
+   [Feedback Analytics](https://eventpulse-9fpd.onrender.com/dashboard/analytics/feedback),
+   select a form, and choose **XLSX**, **CSV**, or **JSON** to download its
+   responses. These downloads include participant details, answers, sentiment,
+   and whether voice feedback was stored (not the private audio file itself).
 
 ### Administrator access
 

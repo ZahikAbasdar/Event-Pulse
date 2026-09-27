@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Download, Copy, BarChart3, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/client';
+import { useSocket } from '../context/SocketContext';
 
 function NpsGauge({ score }) {
   if (score === null) return <p className="text-sm text-gray-400">Not enough NPS data yet.</p>;
@@ -20,6 +21,7 @@ function NpsGauge({ score }) {
 }
 
 export default function FormAnalytics() {
+  const { socket } = useSocket();
   const [forms, setForms] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [analytics, setAnalytics] = useState(null);
@@ -29,6 +31,7 @@ export default function FormAnalytics() {
   const [responses, setResponses] = useState([]);
   const [voiceUrls, setVoiceUrls] = useState({});
   const voiceUrlsRef = useRef(new Map());
+  const selectedForm = forms.find((f) => f._id === selectedId);
 
   useEffect(() => {
     api.get('/forms').then(({ data }) => {
@@ -66,7 +69,32 @@ export default function FormAnalytics() {
     voiceUrlsRef.current.clear();
   }, []);
 
-  const selectedForm = forms.find((f) => f._id === selectedId);
+  useEffect(() => {
+    const eventId = selectedForm?.event?._id;
+    if (!socket || !eventId) return undefined;
+
+    const refreshSelectedForm = async (payload) => {
+      if (payload.eventId?.toString() !== eventId.toString()) return;
+      try {
+        const [analyticsResult, responsesResult] = await Promise.all([
+          api.get(`/forms/${selectedId}/analytics`),
+          api.get(`/forms/${selectedId}/responses`),
+        ]);
+        setAnalytics(analyticsResult.data);
+        setResponses(responsesResult.data.responses);
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Could not refresh live feedback analytics.');
+      }
+    };
+
+    socket.emit('join:event', eventId);
+    socket.on('feedback:new', refreshSelectedForm);
+    return () => {
+      socket.emit('leave:event', eventId);
+      socket.off('feedback:new', refreshSelectedForm);
+    };
+  }, [socket, selectedForm?.event?._id, selectedId]);
+
   const maxWord = analytics?.wordCloud?.[0]?.value || 1;
 
   const loadVoiceRecording = async (responseId) => {
@@ -85,7 +113,26 @@ export default function FormAnalytics() {
     toast.success('Link copied!');
   };
 
-  const exportExcel = () => window.open(`/api/forms/${selectedId}/responses/export`, '_blank');
+  const exportResponses = async (format) => {
+    try {
+      const { data, headers } = await api.get(`/forms/${selectedId}/responses/export`, {
+        params: { format },
+        responseType: 'blob',
+      });
+      const filename = headers['content-disposition']?.match(/filename="([^"]+)"/)?.[1]
+        || `event-feedback-responses.${format}`;
+      const downloadUrl = URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || `Could not export responses as ${format.toUpperCase()}.`);
+    }
+  };
 
   const askAI = async () => {
     setAiLoading(true);
@@ -169,7 +216,19 @@ export default function FormAnalytics() {
 
               <div className="glass-card flex flex-col justify-center gap-3 p-5">
                 <button onClick={copyLink} className="btn-secondary w-full !py-2 text-xs"><Copy size={13} /> Copy share link</button>
-                <button onClick={exportExcel} className="btn-primary w-full !py-2 text-xs"><Download size={13} /> Export responses (.xlsx)</button>
+                <p className="pt-1 text-xs font-semibold text-gray-500 dark:text-gray-400">Export responses</p>
+                <div className="flex flex-wrap gap-2">
+                  {['xlsx', 'csv', 'json'].map((format) => (
+                    <button
+                      key={format}
+                      onClick={() => exportResponses(format)}
+                      className="btn-primary flex-1 !px-3 !py-2 text-xs"
+                      aria-label={`Export responses as ${format.toUpperCase()}`}
+                    >
+                      <Download size={13} /> {format.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
