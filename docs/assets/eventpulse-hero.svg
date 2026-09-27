@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="470" viewBox="0 0 1600 470" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">EventPulse — the live pulse of every PCTE event</title>
+  <desc id="desc">A maroon and gold animated product banner with a live attendee analytics card.</desc>
+  <defs>
+    <linearGradient id="background" x1="58" y1="12" x2="1496" y2="479" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#40101d"/>
+      <stop offset=".53" stop-color="#7a1f2b"/>
+      <stop offset="1" stop-color="#281326"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="1048" y1="61" x2="1504" y2="395" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffdf85"/>
+      <stop offset="1" stop-color="#c99733"/>
+    </linearGradient>
+    <linearGradient id="chart" x1="1020" y1="303" x2="1472" y2="182" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#c9a227"/>
+      <stop offset="1" stop-color="#ffe9a9"/>
+    </linearGradient>
+    <filter id="shadow" x="936" y="42" width="578" height="389" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feFlood flood-opacity="0"/>
+      <feColorMatrix in="SourceAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="alpha"/>
+      <feGaussianBlur in="alpha" stdDeviation="20"/>
+      <feOffset dy="12"/>
+      <feComposite in2="alpha" operator="out"/>
+      <feColorMatrix values="0 0 0 0 0.07 0 0 0 0 0.02 0 0 0 0 0.04 0 0 0 0.3 0"/>
+      <feBlend in2="SourceGraphic" result="shadow"/>
+      <feBlend in="SourceGraphic" in2="shadow" result="shape"/>
+    </filter>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.3" fill="#fff" fill-opacity=".13"/>
+    </pattern>
+  </defs>
+  <style>
+    .float { animation: float 5.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .float-late { animation: float 6.5s ease-in-out 1s infinite; transform-box: fill-box; transform-origin: center; }
+    .pulse { animation: pulse 2.1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .glow { animation: glow 4.2s ease-in-out infinite alternate; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+    @keyframes pulse { 0%, 100% { opacity: .55; transform: scale(.86); } 50% { opacity: 1; transform: scale(1.15); } }
+    @keyframes glow { from { opacity: .32; } to { opacity: .72; } }
+    @media (prefers-reduced-motion: reduce) {
+      .float, .float-late, .pulse, .glow { animation: none; }
+    }
+  </style>
+  <rect width="1600" height="470" rx="34" fill="url(#background)"/>
+  <rect width="1600" height="470" rx="34" fill="url(#dots)"/>
+  <circle cx="1305" cy="145" r="230" fill="#e8b94e" fill-opacity=".07" class="glow"/>
+  <circle cx="1450" cy="365" r="130" fill="#fdc96b" fill-opacity=".06"/>
+  <path d="M0 354C195 279 266 418 438 360s218-80 337-43 200 62 326 10 271-91 499 3v140H0V354Z" fill="#220e1a" fill-opacity=".19"/>
+  <path d="M0 396c183-70 269 30 441-20s238-51 336-18 214 42 340 2 288-72 483-8" stroke="#f1c76d" stroke-opacity=".19" stroke-width="2"/>
+
+  <g transform="translate(96 92)">
+    <rect width="50" height="50" rx="16" fill="url(#gold)"/>
+    <path d="M10 27h8l5-12 8 24 7-18 4 6h5" stroke="#591c28" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.2"/>
+    <text x="68" y="23" fill="#ffedc3" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="2.8">PCTE EVENT PLATFORM</text>
+    <text x="0" y="133" fill="#fffaf2" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="69" font-weight="750" letter-spacing="-2.5">Make every</text>
+    <text x="0" y="211" fill="#fffaf2" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="69" font-weight="750" letter-spacing="-2.5">moment count.</text>
+    <text x="2" y="254" fill="#f8e9e0" fill-opacity=".82" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22">Discover. Connect. Celebrate. Learn in real time.</text>
+    <g transform="translate(0 291)">
+      <rect width="149" height="39" rx="19.5" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".16"/>
+      <circle cx="20" cy="19.5" r="5" fill="#e8be5b" class="pulse"/>
+      <text x="35" y="24" fill="#fff4d9" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14" font-weight="600">Live analytics</text>
+      <rect x="162" width="155" height="39" rx="19.5" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".16"/>
+      <path d="M180 20h14m-4-4 4 4-4 4" stroke="#f0cf83" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+      <text x="202" y="24" fill="#fff4d9" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14" font-weight="600">QR feedback</text>
+    </g>
+  </g>
+
+  <g class="float" filter="url(#shadow)">
+    <rect x="990" y="74" width="470" height="306" rx="25" fill="#fff" fill-opacity=".96"/>
+    <rect x="990.75" y="74.75" width="468.5" height="304.5" rx="24.25" stroke="#fff" stroke-opacity=".6" stroke-width="1.5"/>
+    <text x="1020" y="113" fill="#30242b" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="17" font-weight="700">Event pulse</text>
+    <text x="1020" y="135" fill="#92868b" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12">Feedback responses · last 7 days</text>
+    <rect x="1361" y="95" width="72" height="27" rx="13.5" fill="#e8f6ee"/>
+    <circle cx="1375" cy="108.5" r="3.5" fill="#20a66a" class="pulse"/>
+    <text x="1386" y="113" fill="#16834f" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11" font-weight="700">LIVE</text>
+    <text x="1020" y="194" fill="#30242b" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="39" font-weight="750">1,284</text>
+    <text x="1022" y="216" fill="#8c7d83" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12">responses collected</text>
+    <path d="M1020 334H1431M1020 294H1431M1020 254H1431" stroke="#e8e1e3" stroke-width="1"/>
+    <path d="M1020 317c28-10 37-51 69-44s42 44 72 23 41-49 70-32 44 33 71 14 42-42 73-38 37 22 56 9" stroke="url(#chart)" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+    <path d="M1020 317c28-10 37-51 69-44s42 44 72 23 41-49 70-32 44 33 71 14 42-42 73-38 37 22 56 9v94h-411v-47Z" fill="#d6aa4e" fill-opacity=".12"/>
+    <circle cx="1431" cy="249" r="6" fill="#c49731" stroke="#fff" stroke-width="3" class="pulse"/>
+    <text x="1020" y="358" fill="#a69aa0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">MON</text>
+    <text x="1120" y="358" fill="#a69aa0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">TUE</text>
+    <text x="1220" y="358" fill="#a69aa0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">WED</text>
+    <text x="1320" y="358" fill="#a69aa0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">THU</text>
+  </g>
+
+  <g class="float-late">
+    <rect x="923" y="292" width="192" height="94" rx="18" fill="#fff" fill-opacity=".98"/>
+    <circle cx="959" cy="339" r="22" fill="#f7edd4"/>
+    <path d="M959 325v14l10 6" stroke="#8e6312" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/>
+    <text x="992" y="332" fill="#94878c" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">NEW FEEDBACK</text>
+    <text x="992" y="354" fill="#382832" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14" font-weight="700">Just received</text>
+    <circle cx="1085" cy="320" r="4" fill="#23ad70" class="pulse"/>
+  </g>
+
+  <g class="pulse" opacity=".85">
+    <circle cx="1515" cy="105" r="4" fill="#ffe9a9"/>
+    <circle cx="895" cy="145" r="3" fill="#ffe9a9"/>
+    <circle cx="1490" cy="407" r="5" fill="#edc15c"/>
+  </g>
+</svg>

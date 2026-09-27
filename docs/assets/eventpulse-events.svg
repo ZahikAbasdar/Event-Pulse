@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="370" viewBox="0 0 1400 370" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">EventPulse PCTE event cover-art prototypes</title>
+  <desc id="desc">Locally generated festival-card artwork concepts for Koshish, Turf, and Ehsaas.</desc>
+  <defs>
+    <linearGradient id="koshish" x1="24" y1="25" x2="460" y2="330" gradientUnits="userSpaceOnUse"><stop stop-color="#812833"/><stop offset="1" stop-color="#391522"/></linearGradient>
+    <linearGradient id="turf" x1="470" y1="20" x2="930" y2="342" gradientUnits="userSpaceOnUse"><stop stop-color="#3a7558"/><stop offset="1" stop-color="#183b37"/></linearGradient>
+    <linearGradient id="ehsaas" x1="940" y1="16" x2="1378" y2="330" gradientUnits="userSpaceOnUse"><stop stop-color="#405c91"/><stop offset="1" stop-color="#281f48"/></linearGradient>
+    <linearGradient id="gold" x1="96" y1="212" x2="371" y2="212" gradientUnits="userSpaceOnUse"><stop stop-color="#f5d382"/><stop offset="1" stop-color="#d5a94a"/></linearGradient>
+    <radialGradient id="spot"><stop stop-color="#ffe3a1" stop-opacity=".77"/><stop offset="1" stop-color="#ffe3a1" stop-opacity="0"/></radialGradient>
+    <filter id="shadow" x="-10%" y="-15%" width="120%" height="140%"><feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#33222a" flood-opacity=".16"/></filter>
+  </defs>
+  <style>
+    .spark { animation: shimmer 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .lift { animation: lift 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes shimmer { 0%,100% { opacity: .42; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.18); } }
+    @keyframes lift { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @media (prefers-reduced-motion: reduce) { .spark, .lift { animation: none; } }
+  </style>
+
+  <g filter="url(#shadow)">
+    <rect x="15" y="18" width="435" height="334" rx="24" fill="url(#koshish)"/>
+    <rect x="482" y="18" width="435" height="334" rx="24" fill="url(#turf)"/>
+    <rect x="949" y="18" width="435" height="334" rx="24" fill="url(#ehsaas)"/>
+  </g>
+
+  <g opacity=".78">
+    <circle cx="339" cy="122" r="129" fill="url(#spot)"/>
+    <circle cx="757" cy="100" r="133" fill="#e9d591" fill-opacity=".13"/>
+    <circle cx="1214" cy="105" r="137" fill="#edba75" fill-opacity=".18"/>
+  </g>
+
+  <g class="lift">
+    <path d="M236 310c-26-32-38-70-38-105 0-43 23-67 50-67s50 24 50 67c0 35-12 73-38 105m-12-104v104m-29-44h58m-53-30h48m-42-27h36" stroke="#f0ce83" stroke-opacity=".83" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M213 311h69" stroke="#f0ce83" stroke-width="3" stroke-linecap="round"/>
+    <path d="m324 72 4 9 9 4-9 4-4 9-4-9-9-4 9-4 4-9Zm55 71 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" fill="#f5d993" class="spark"/>
+  </g>
+  <text x="43" y="64" fill="#f2d58e" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="2.2">PCTE · CULTURE &amp; CREATIVITY</text>
+  <text x="43" y="284" fill="#fff8eb" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="38" font-weight="750">KOSHISH</text>
+  <text x="44" y="313" fill="#f6e3bf" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Festaweek · find your spotlight</text>
+  <rect x="43" y="326" width="83" height="3" rx="1.5" fill="url(#gold)"/>
+
+  <g class="lift">
+    <path d="M674 260c-13-36-12-69 4-99 11-20 25-28 36-21 12 7 12 24 1 43-15 27-29 52-41 77Zm8 5 48-83m-45 24 22 13m-35 13 26 15" stroke="#d4e0a9" stroke-opacity=".83" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M664 282c11-16 28-22 46-17m-62 35h99" stroke="#d4e0a9" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="799" cy="88" r="26" fill="#ebd798" fill-opacity=".12"/>
+    <path d="M799 76v24m-12-12h24" stroke="#e8dbab" stroke-opacity=".82" stroke-width="2" class="spark"/>
+  </g>
+  <text x="510" y="64" fill="#d7e4c0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="2.2">PCTE · INTER-SCHOOL FEST</text>
+  <text x="510" y="284" fill="#f4fff1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="38" font-weight="750">TURF</text>
+  <text x="511" y="313" fill="#d8e6dc" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Meet. Compete. Make it count.</text>
+  <rect x="510" y="326" width="83" height="3" rx="1.5" fill="#b7ce9b"/>
+
+  <g class="lift">
+    <circle cx="1168" cy="120" r="36" fill="#f3c67f" fill-opacity=".2"/>
+    <circle cx="1168" cy="120" r="17" fill="#f6d28c" fill-opacity=".63"/>
+    <path d="m1042 271 40-80 42 80m-64-34h44m-9-17 53 51m-24-40v40" stroke="#e8c3de" stroke-opacity=".8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M1031 282h211" stroke="#e8c3de" stroke-opacity=".72" stroke-width="3" stroke-linecap="round"/>
+    <path d="m1288 77 4 9 9 4-9 4-4 9-4-9-9-4 9-4 4-9Z" fill="#edc5db" class="spark"/>
+    <path d="m1251 130 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z" fill="#f0d398" class="spark"/>
+  </g>
+  <text x="977" y="64" fill="#e8cae1" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="2.2">PCTE · INTER-COLLEGE FEST</text>
+  <text x="977" y="284" fill="#fff6fd" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="38" font-weight="750">EHSAAS</text>
+  <text x="978" y="313" fill="#e9d9e8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="14">Big voices. Shared stages. One campus.</text>
+  <rect x="977" y="326" width="83" height="3" rx="1.5" fill="#dfb7d5"/>
+</svg>

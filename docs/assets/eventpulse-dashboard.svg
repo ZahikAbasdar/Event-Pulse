@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="910" viewBox="0 0 1400 910" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">EventPulse live feedback analytics dashboard prototype</title>
+  <desc id="desc">Animated organizer dashboard with four charts: response trends, responses by event, rating distribution, and voice feedback coverage.</desc>
+  <defs>
+    <linearGradient id="page" x1="0" y1="0" x2="1400" y2="910" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f9f6f6"/>
+      <stop offset="1" stop-color="#f1edf0"/>
+    </linearGradient>
+    <linearGradient id="line" x1="172" y1="413" x2="665" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7a1f2b"/>
+      <stop offset="1" stop-color="#d4a94f"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="825" y1="414" x2="825" y2="238" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7a1f2b"/>
+      <stop offset="1" stop-color="#c9a227"/>
+    </linearGradient>
+    <linearGradient id="voice" x1="1000" y1="743" x2="1205" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7a1f2b"/>
+      <stop offset="1" stop-color="#d2ad59"/>
+    </linearGradient>
+    <filter id="cardShadow" x="18" y="20" width="1380" height="870" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="7" stdDeviation="11" flood-color="#3b1e2a" flood-opacity=".055"/>
+    </filter>
+  </defs>
+  <style>
+    .card { fill: #fff; stroke: #eee8eb; stroke-width: 1.2; }
+    .eyebrow { fill: #90838b; font: 12px Inter,Segoe UI,Arial,sans-serif; letter-spacing: 1.3px; }
+    .heading { fill: #352833; font: 700 18px Inter,Segoe UI,Arial,sans-serif; }
+    .label { fill: #9b9096; font: 11px Inter,Segoe UI,Arial,sans-serif; }
+    .grid { stroke: #eee9ec; stroke-width: 1; }
+    .live { animation: beat 2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .draw { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4.5s ease-in-out infinite alternate; }
+    .bar-a { animation: rise 2.8s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+    .bar-b { animation: rise 3.2s ease-in-out .3s infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+    .bar-c { animation: rise 2.6s ease-in-out .6s infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+    .bar-d { animation: rise 3.4s ease-in-out .15s infinite alternate; transform-box: fill-box; transform-origin: bottom; }
+    .scan { animation: scan 3.8s ease-in-out infinite; }
+    @keyframes beat { 0%,100% { opacity: .6; transform: scale(.88); } 50% { opacity: 1; transform: scale(1.12); } }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    @keyframes rise { from { transform: scaleY(.75); } to { transform: scaleY(1); } }
+    @keyframes scan { 0%,100% { opacity: .15; } 50% { opacity: .55; } }
+    @media (prefers-reduced-motion: reduce) {
+      .live, .draw, .bar-a, .bar-b, .bar-c, .bar-d, .scan { animation: none; }
+      .draw { stroke-dashoffset: 0; }
+    }
+  </style>
+
+  <rect width="1400" height="910" rx="28" fill="url(#page)"/>
+  <rect x="29" y="28" width="1342" height="854" rx="23" fill="#fbfafb" stroke="#e8e1e5"/>
+
+  <rect x="29" y="28" width="232" height="854" rx="23" fill="#40121f"/>
+  <path d="M238 28h23v854h-23z" fill="#40121f"/>
+  <rect x="51" y="54" width="38" height="38" rx="12" fill="#d1ab52"/>
+  <path d="M59 74h6l4-9 7 19 6-14 4 4h2" stroke="#521c28" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"/>
+  <text x="99" y="69" fill="#fff" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="750">EventPulse</text>
+  <text x="99" y="86" fill="#e7dce0" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10">PCTE event platform</text>
+  <text x="54" y="137" fill="#bda6ad" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="1.5">WORKSPACE</text>
+  <rect x="44" y="152" width="202" height="43" rx="11" fill="#ffffff" fill-opacity=".12"/>
+  <rect x="44" y="163" width="3" height="21" rx="1.5" fill="#e5bf68"/>
+  <rect x="62" y="167" width="15" height="14" rx="3" stroke="#f2daa0" stroke-width="1.5"/>
+  <path d="M66 164v6m7-6v6" stroke="#f2daa0" stroke-width="1.5"/>
+  <text x="89" y="180" fill="#fff8e8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" font-weight="600">Overview</text>
+  <rect x="62" y="217" width="15" height="14" rx="3" stroke="#ccb9c0" stroke-width="1.4"/>
+  <path d="M62 222h15m-10-8v4m5-4v4" stroke="#ccb9c0" stroke-width="1.4"/>
+  <text x="89" y="230" fill="#e0d3d8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">My events</text>
+  <rect x="62" y="266" width="15" height="13" rx="2.5" stroke="#ccb9c0" stroke-width="1.4"/>
+  <path d="M66 271h7m-7 4h5" stroke="#ccb9c0" stroke-width="1.4"/>
+  <text x="89" y="278" fill="#e0d3d8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Feedback forms</text>
+  <path d="M63 330h13v13H63zm2 9 3-4 3 2 3-5" stroke="#ccb9c0" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4"/>
+  <text x="89" y="340" fill="#e0d3d8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Analytics</text>
+  <path d="M64 393h13m-13 5h13m-13 5h8" stroke="#ccb9c0" stroke-linecap="round" stroke-width="1.5"/>
+  <text x="89" y="401" fill="#e0d3d8" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">Certificates</text>
+  <rect x="52" y="774" width="184" height="77" rx="14" fill="#ffffff" fill-opacity=".08" stroke="#ffffff" stroke-opacity=".12"/>
+  <circle cx="73" cy="800" r="12" fill="#d3ad57"/>
+  <path d="M68 800h3l2-4 3 8 2-5h2" stroke="#542230" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+  <text x="94" y="799" fill="#fff5dc" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="650">Live connection</text>
+  <circle cx="98" cy="820" r="3" fill="#54d99a" class="live"/>
+  <text x="107" y="824" fill="#d6c4cb" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10">Dashboard is up to date</text>
+
+  <text x="294" y="73" fill="#92868e" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="11">PCTE GROUP OF INSTITUTES  /  DASHBOARD</text>
+  <text x="294" y="112" fill="#30242d" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="27" font-weight="750">Organizer dashboard</text>
+  <text x="294" y="138" fill="#938890" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13">See your events and feedback activity at a glance.</text>
+  <rect x="1248" y="53" width="94" height="34" rx="17" fill="#e9f6ee"/>
+  <circle cx="1264" cy="70" r="4" fill="#19a769" class="live"/>
+  <text x="1277" y="74" fill="#18804f" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="12" font-weight="700">LIVE</text>
+  <rect x="1209" y="102" width="133" height="23" rx="11.5" fill="#faf0dd"/>
+  <text x="1275.5" y="117" text-anchor="middle" fill="#8d6a20" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="9" font-weight="700" letter-spacing=".7">UI PREVIEW · SAMPLE</text>
+
+  <g filter="url(#cardShadow)">
+    <rect x="294" y="165" width="251" height="97" rx="15" class="card"/>
+    <rect x="559" y="165" width="251" height="97" rx="15" class="card"/>
+    <rect x="824" y="165" width="251" height="97" rx="15" class="card"/>
+    <rect x="1089" y="165" width="253" height="97" rx="15" class="card"/>
+  </g>
+  <text x="316" y="194" class="eyebrow">TOTAL EVENTS</text>
+  <text x="316" y="235" fill="#342630" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="31" font-weight="750">12</text>
+  <circle cx="505" cy="210" r="20" fill="#f8edef"/>
+  <path d="M498 208h14m-11-8v6m8-6v6m-12 2h16v13h-16z" stroke="#7a1f2b" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"/>
+  <text x="581" y="194" class="eyebrow">FEEDBACK RESPONSES</text>
+  <text x="581" y="235" fill="#342630" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="31" font-weight="750">1,284</text>
+  <circle cx="770" cy="210" r="20" fill="#f7f0dd"/>
+  <path d="M761 205h18v12h-10l-5 4v-4h-3z" stroke="#966e19" stroke-linejoin="round" stroke-width="1.6"/>
+  <text x="846" y="194" class="eyebrow">EVENT REGISTRATIONS</text>
+  <text x="846" y="235" fill="#342630" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="31" font-weight="750">846</text>
+  <circle cx="1035" cy="210" r="20" fill="#edf5f5"/>
+  <circle cx="1035" cy="205" r="5" stroke="#307879" stroke-width="1.5"/>
+  <path d="M1025 220c1-6 5-9 10-9s9 3 10 9" stroke="#307879" stroke-linecap="round" stroke-width="1.5"/>
+  <text x="1111" y="194" class="eyebrow">VOICE RESPONSES</text>
+  <text x="1111" y="235" fill="#342630" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="31" font-weight="750">392</text>
+  <circle cx="1302" cy="210" r="20" fill="#f0eef9"/>
+  <rect x="1299" y="199" width="6" height="17" rx="3" stroke="#6557a6" stroke-width="1.5"/>
+  <path d="M1295 208a7 7 0 0 0 14 0m-7 7v4m-4 0h8" stroke="#6557a6" stroke-linecap="round" stroke-width="1.5"/>
+
+  <g filter="url(#cardShadow)">
+    <rect x="294" y="284" width="664" height="271" rx="17" class="card"/>
+    <rect x="976" y="284" width="366" height="271" rx="17" class="card"/>
+    <rect x="294" y="576" width="664" height="274" rx="17" class="card"/>
+    <rect x="976" y="576" width="366" height="274" rx="17" class="card"/>
+  </g>
+
+  <text x="318" y="318" class="heading">Feedback over time</text>
+  <text x="318" y="339" class="label">Responses received · rolling 7-day view</text>
+  <rect x="861" y="302" width="73" height="24" rx="12" fill="#faf0dd"/>
+  <circle cx="875" cy="314" r="3.3" fill="#b28931" class="live"/>
+  <text x="885" y="318" fill="#8d6a20" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="10" font-weight="650">LIVE</text>
+  <path d="M356 385H918M356 428H918M356 470H918" class="grid"/>
+  <text x="325" y="389" class="label">60</text>
+  <text x="325" y="432" class="label">40</text>
+  <text x="325" y="474" class="label">20</text>
+  <text x="325" y="515" class="label">0</text>
+  <path d="M356 504 442 481 528 488 614 427 700 445 786 394 872 415 918 375" stroke="url(#line)" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" class="draw"/>
+  <path d="m356 504 86-23 86 7 86-61 86 18 86-51 86 21 46-40v140H356V504Z" fill="#bd8a39" fill-opacity=".07"/>
+  <circle cx="918" cy="375" r="7" fill="#c49a43" stroke="#fff" stroke-width="3" class="live"/>
+  <circle cx="614" cy="427" r="4.5" fill="#fff" stroke="#a55b45" stroke-width="2"/>
+  <text x="352" y="531" class="label">MON</text>
+  <text x="438" y="531" class="label">TUE</text>
+  <text x="524" y="531" class="label">WED</text>
+  <text x="610" y="531" class="label">THU</text>
+  <text x="696" y="531" class="label">FRI</text>
+  <text x="782" y="531" class="label">SAT</text>
+  <text x="868" y="531" class="label">SUN</text>
+
+  <text x="1001" y="318" class="heading">Overall experience ratings</text>
+  <text x="1001" y="339" class="label">Responses by rating · sample values</text>
+  <path d="M1036 382H1317M1036 414H1317M1036 446H1317M1036 478H1317" class="grid"/>
+  <text x="1008" y="386" class="label">60</text>
+  <text x="1008" y="418" class="label">40</text>
+  <text x="1008" y="450" class="label">20</text>
+  <text x="1016" y="482" class="label">0</text>
+  <rect x="1050" y="447" width="34" height="31" rx="5" fill="#d9c5ca" class="bar-a"/>
+  <rect x="1102" y="428" width="34" height="50" rx="5" fill="#cbb1b8" class="bar-b"/>
+  <rect x="1154" y="409" width="34" height="69" rx="5" fill="#b58d99" class="bar-c"/>
+  <rect x="1206" y="393" width="34" height="85" rx="5" fill="#a25a68" class="bar-d"/>
+  <rect x="1258" y="377" width="34" height="101" rx="5" fill="url(#bar)" class="bar-a"/>
+  <text x="1067" y="500" text-anchor="middle" class="label">1</text>
+  <text x="1119" y="500" text-anchor="middle" class="label">2</text>
+  <text x="1171" y="500" text-anchor="middle" class="label">3</text>
+  <text x="1223" y="500" text-anchor="middle" class="label">4</text>
+  <text x="1275" y="500" text-anchor="middle" class="label">5</text>
+  <text x="1317" y="533" text-anchor="end" fill="#a2989d" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="9">RATING</text>
+
+  <text x="318" y="612" class="heading">Responses by event</text>
+  <text x="318" y="633" class="label">Compare feedback activity · illustrative</text>
+  <path d="M360 778H925M360 737H925M360 696H925" class="grid"/>
+  <text x="325" y="782" class="label">0</text>
+  <text x="325" y="741" class="label">40</text>
+  <text x="325" y="700" class="label">80</text>
+  <g fill="url(#bar)">
+    <rect x="390" y="698" width="52" height="80" rx="7" class="bar-a"/>
+    <rect x="494" y="722" width="52" height="56" rx="7" class="bar-b"/>
+    <rect x="598" y="669" width="52" height="109" rx="7" class="bar-c"/>
+    <rect x="702" y="734" width="52" height="44" rx="7" class="bar-d"/>
+  </g>
+  <g fill="#d8c5c9">
+    <rect x="451" y="735" width="11" height="43" rx="5"/>
+    <rect x="555" y="744" width="11" height="34" rx="5"/>
+    <rect x="659" y="719" width="11" height="59" rx="5"/>
+    <rect x="763" y="756" width="11" height="22" rx="5"/>
+  </g>
+  <rect x="812" y="664" width="12" height="12" rx="3" fill="#7a1f2b"/>
+  <text x="831" y="674" class="label">Feedback</text>
+  <rect x="812" y="684" width="12" height="12" rx="3" fill="#d8c5c9"/>
+  <text x="831" y="694" class="label">Check-ins</text>
+  <text x="389" y="803" class="label">Koshish</text>
+  <text x="491" y="803" class="label">Turf</text>
+  <text x="594" y="803" class="label">Ehsaas</text>
+  <text x="702" y="803" class="label">PAC</text>
+
+  <text x="1001" y="612" class="heading">Voice feedback</text>
+  <text x="1001" y="633" class="label">Responses that include audio</text>
+  <circle cx="1159" cy="716" r="51" stroke="#f0ecee" stroke-width="18"/>
+  <circle cx="1159" cy="716" r="51" stroke="url(#voice)" stroke-width="18" stroke-dasharray="193 321" stroke-dashoffset="0" transform="rotate(-90 1159 716)" stroke-linecap="round" class="scan"/>
+  <text x="1159" y="720" text-anchor="middle" fill="#392d35" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="23" font-weight="750">31%</text>
+  <text x="1159" y="739" text-anchor="middle" fill="#998c93" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="9">OF RESPONSES</text>
+  <circle cx="1015" cy="798" r="4" fill="#8b2632"/>
+  <text x="1027" y="802" class="label">Audio received</text>
+  <circle cx="1162" cy="798" r="4" fill="#ded5d9"/>
+  <text x="1174" y="802" class="label">Written only</text>
+  <text x="1010" y="829" fill="#a2989d" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="9">Illustrative prototype · live app uses API data</text>
+</svg>
