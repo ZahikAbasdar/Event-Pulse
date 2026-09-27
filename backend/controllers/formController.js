@@ -12,8 +12,10 @@ const { ApiError } = require('../middleware/errorHandler');
 const asyncHandler = require('../middleware/asyncHandler');
 const { getIO } = require('../utils/socket');
 const eventFeedbackQuestions = require('../utils/eventFeedbackQuestions');
+const objectStorage = require('../utils/objectStorage');
 
 const VOICE_FEEDBACK_DIR = path.resolve(__dirname, '..', process.env.VOICE_FEEDBACK_DIR || 'private/feedback-audio');
+const VOICE_FEEDBACK_BUCKET = process.env.SUPABASE_VOICE_BUCKET || 'eventpulse-voice';
 const ACADEMIC_QUESTIONS = [
   { text: 'Name', type: 'academic_identifier', academicField: 'name', required: true },
   { text: 'Roll Number', type: 'academic_identifier', academicField: 'rollNumber', required: true },
@@ -261,7 +263,17 @@ exports.submitPublicResponse = asyncHandler(async (req, res) => {
     const extension = extensionByMimeType[mimeType];
     if (!extension) throw new ApiError(400, 'Unsupported voice recording format.');
     const fileName = `${crypto.randomUUID()}${extension}`;
-    await fs.promises.writeFile(path.join(VOICE_FEEDBACK_DIR, fileName), req.file.buffer, { flag: 'wx' });
+    if (objectStorage.isConfigured()) {
+      await objectStorage.uploadObject({
+        bucket: VOICE_FEEDBACK_BUCKET,
+        objectPath: fileName,
+        body: req.file.buffer,
+        contentType: mimeType,
+      });
+    } else {
+      await fs.promises.mkdir(VOICE_FEEDBACK_DIR, { recursive: true });
+      await fs.promises.writeFile(path.join(VOICE_FEEDBACK_DIR, fileName), req.file.buffer, { flag: 'wx' });
+    }
     voiceFeedback = {
       fileName,
       mimeType,
@@ -355,6 +367,25 @@ exports.getVoiceFeedback = asyncHandler(async (req, res) => {
     throw new ApiError(500, 'Stored voice recording reference is invalid.');
   }
 
+  res.set({
+    'Content-Type': response.voiceFeedback.mimeType,
+    'Content-Disposition': `inline; filename="${response.voiceFeedback.fileName}"`,
+    'Cache-Control': 'private, no-store',
+    'X-Content-Type-Options': 'nosniff',
+  });
+  if (objectStorage.isConfigured()) {
+    try {
+      const audio = await objectStorage.downloadObject({
+        bucket: VOICE_FEEDBACK_BUCKET,
+        objectPath: response.voiceFeedback.fileName,
+      });
+      return res.send(audio);
+    } catch (err) {
+      console.error('[feedback] Stored voice recording is unavailable:', err.message);
+      throw new ApiError(500, 'The stored voice recording is currently unavailable.');
+    }
+  }
+
   const filePath = path.join(VOICE_FEEDBACK_DIR, response.voiceFeedback.fileName);
   try {
     await fs.promises.access(filePath, fs.constants.R_OK);
@@ -362,12 +393,6 @@ exports.getVoiceFeedback = asyncHandler(async (req, res) => {
     console.error('[feedback] Stored voice recording is unavailable:', err.message);
     throw new ApiError(500, 'The stored voice recording is currently unavailable.');
   }
-  res.set({
-    'Content-Type': response.voiceFeedback.mimeType,
-    'Content-Disposition': `inline; filename="${response.voiceFeedback.fileName}"`,
-    'Cache-Control': 'private, no-store',
-    'X-Content-Type-Options': 'nosniff',
-  });
   fs.createReadStream(filePath).on('error', (err) => {
     console.error('[feedback] Could not stream stored voice recording:', err.message);
     if (res.headersSent) res.destroy(err);

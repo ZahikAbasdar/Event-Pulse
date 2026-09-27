@@ -18,15 +18,6 @@ const ALLOWED_SPREADSHEET = ['text/csv', 'application/vnd.ms-excel', 'applicatio
 
 const maxSizeBytes = (Number(process.env.MAX_UPLOAD_MB) || 15) * 1024 * 1024;
 
-const mediaUpload = multer({
-  storage,
-  limits: { fileSize: maxSizeBytes },
-  fileFilter: (req, file, cb) => {
-    if (!ALLOWED_MEDIA.includes(file.mimetype)) return cb(new Error('Only image/video files are allowed'));
-    cb(null, true);
-  },
-});
-
 const spreadsheetUpload = multer({
   storage,
   limits: { fileSize: maxSizeBytes },
@@ -38,6 +29,15 @@ const spreadsheetUpload = multer({
 
 const ALLOWED_AUDIO = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav'];
 const voiceFeedbackMaxBytes = (Number(process.env.MAX_VOICE_FEEDBACK_MB) || 25) * 1024 * 1024;
+const mediaUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: maxSizeBytes },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_MEDIA.includes(file.mimetype)) return cb(new Error('Only image/video files are allowed'));
+    cb(null, true);
+  },
+});
+
 const voiceFeedbackUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: voiceFeedbackMaxBytes, files: 1 },

@@ -6,16 +6,23 @@ const jwt = require('jsonwebtoken');
 const app = require('./app');
 const connectDB = require('./config/db');
 const { setIO } = require('./utils/socket');
+const objectStorage = require('./utils/objectStorage');
 const User = require('./models/User');
 
 const PORT = process.env.PORT || 5000;
 
 async function start() {
+  if (process.env.NODE_ENV === 'production' && !objectStorage.isConfigured()) {
+    throw new Error('Configure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY for durable production file storage.');
+  }
   await connectDB();
 
   const server = http.createServer(app);
   const io = new Server(server, {
-    cors: { origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true },
+    cors: {
+      origin: process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173',
+      credentials: true,
+    },
   });
 
   // Authenticate socket connections with the same JWT used for the REST API

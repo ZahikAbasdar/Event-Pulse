@@ -212,10 +212,10 @@ set `VITE_API_PROXY_TARGET` before starting Vite.
 
 The repository includes [`render.yaml`](render.yaml), which configures a
 single-origin Render web service: Express serves the built React app, the API,
-and Socket.IO from the same URL. A persistent disk is mounted for uploaded
-event media and voice recordings. **A Render Starter web service is required
-for the persistent disk.** Configure a MongoDB Atlas database before creating
-the Render Blueprint.
+and Socket.IO from the same URL. Render's free compute filesystem is
+ephemeral, so uploaded event media and voice feedback are saved in Supabase
+Storage rather than on the app server. Configure MongoDB Atlas and Supabase
+before creating the Render Blueprint.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ZahikAbasdar/Event-Pulse)
 
@@ -223,18 +223,24 @@ the Render Blueprint.
    the outbound IP ranges shown for your Render service; avoid opening database
    access to the entire internet where possible. Copy the Atlas connection URI
    and substitute the database user's password safely.
-2. In Render, choose **New → Blueprint**, connect this GitHub repository, and
+2. Create a Supabase project and two Storage buckets:
+   - `eventpulse-media` — **public** bucket for authorized event photos/videos.
+   - `eventpulse-voice` — **private** bucket for participant voice recordings.
+
+   Copy the project's URL and **service role/secret key**. The key is a
+   backend-only secret and must never be sent to the browser or added to Git.
+3. In Render, choose **New → Blueprint**, connect this GitHub repository, and
    deploy the `render.yaml` blueprint from the `main` branch.
-3. Add the requested private environment values in Render's dashboard:
+4. Add the requested private environment values in Render's dashboard:
    `MONGO_URI`, `OWNER_NAME`, `OWNER_EMAIL`, `OWNER_PASSWORD`,
-   `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and
-   `TWILIO_VERIFY_SERVICE_SID`. Render generates `JWT_SECRET` and
-   `COOKIE_SECRET`. Never put secrets in Git or in client-side variables.
-4. Wait for the build and `/api/health` health check to pass. The default
-   service URL is [`https://eventpulse.onrender.com`](https://eventpulse.onrender.com).
-   If you change the Render service name, update `CLIENT_URL` to the exact
-   deployed HTTPS origin, then redeploy.
-5. Initialize the empty production database exactly once from the Render
+   `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `TWILIO_ACCOUNT_SID`,
+   `TWILIO_AUTH_TOKEN`, and `TWILIO_VERIFY_SERVICE_SID`. Render generates
+   `JWT_SECRET` and `COOKIE_SECRET`. Never put secrets in Git or in
+   client-side variables.
+5. Wait for the build and `/api/health` health check to pass. Use the HTTPS
+   service URL Render assigns to the service. Render's external URL is used
+   automatically for CORS and Socket.IO.
+6. Initialize the empty production database exactly once from the Render
    service Shell:
 
    ```bash
@@ -245,15 +251,17 @@ the Render Blueprint.
    seeded PCTE collections; never run it to update a database with data that
    must be preserved. For a populated database, use the non-destructive
    `npm run seed:jasmine --prefix backend` only if that event update is needed.
-6. Verify the live URL, organizer login, feedback QR link, media upload, and
+7. Verify the live URL, organizer login, feedback QR link, media upload, and
    Socket.IO updates. Send a real OTP only after valid Twilio Verify credentials
    and any Twilio trial recipient verification are configured.
 
-The included disk starts at 1 GB. Monitor its usage and configure external
-backups; a persistent disk is not itself a backup. Do not use an ephemeral
-free-tier filesystem for feedback audio or uploaded media. Render, MongoDB
-Atlas, and Twilio account setup and billing are controlled by their providers;
-this repository cannot create those accounts or enter account secrets for you.
+The free tiers have provider-defined quotas and availability limits. Monitor
+Supabase storage usage and keep independent backups of important recordings.
+The application has no recording deletion endpoint, but no free cloud tier is
+a guarantee of unlimited storage or availability. Render, MongoDB Atlas,
+Supabase, and Twilio account setup and billing are controlled by their
+providers; this repository cannot create those accounts or enter account
+secrets for you.
 
 ## 📲 Real phone verification
 
@@ -276,12 +284,14 @@ verification.
 
 ## 🎙️ Voice feedback storage
 
-Voice recordings default to `backend/private/feedback-audio` and are not served
-as public uploads. The application has no recording-deletion endpoint or
-automatic cleanup. **Local disk is not a backup or a production durability
-guarantee:** production operators must configure a persistent volume, verify
-backups and restore procedures, protect access to recordings, and establish an
-appropriate privacy and retention policy for participant information.
+With Supabase configured, voice recordings are stored in the private
+`eventpulse-voice` bucket and are streamed only through the authorized
+organizer endpoint. The application has no recording-deletion endpoint or
+automatic cleanup. Local development without Supabase stores audio in
+`backend/private/feedback-audio`. **Cloud storage is not a backup:** operators
+must monitor quotas, verify backups and restore procedures, protect access to
+recordings, and establish an appropriate privacy and retention policy for
+participant information.
 
 ## 🔐 Other optional integrations
 
@@ -290,7 +300,8 @@ appropriate privacy and retention policy for participant information.
 | YouTube channel video listings | `YOUTUBE_API_KEY` | The official channel/playlist embeds remain available; API-populated video cards are disabled. |
 | AI-assisted tools | `AI_PROVIDER_API_KEY`, optional `AI_PROVIDER_BASE_URL` | Provider-backed AI answers are unavailable. |
 | Certificate email delivery | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_PORT`/`SMTP_FROM` | Generated certificates remain downloadable but are not emailed. |
-| Public/proxied deployment | `CLIENT_URL`, optional `VOICE_FEEDBACK_DIR` | Configure these to match the deployed frontend and persistent storage location. |
+| Persistent media/audio storage | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, optional bucket names | Local development falls back to local disk; production refuses to start without remote storage. |
+| Public/proxied deployment | `CLIENT_URL` (optional) | Render's service URL is detected automatically; set this only for a custom domain/proxy. |
 
 All backend configuration belongs in the ignored local `backend/.env` file.
 See [`backend/.env.example`](backend/.env.example) for the full template.

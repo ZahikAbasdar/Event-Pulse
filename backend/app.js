@@ -29,10 +29,21 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
-app.use(helmet());
+const supabaseOrigin = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).origin : null;
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'connect-src': ["'self'", 'ws:', 'wss:'],
+      'frame-src': ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
+      'img-src': ["'self'", 'data:', 'blob:', ...(supabaseOrigin ? [supabaseOrigin] : [])],
+      'media-src': ["'self'", 'blob:', ...(supabaseOrigin ? [supabaseOrigin] : [])],
+    },
+  },
+}));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173',
     credentials: true,
   })
 );
@@ -42,7 +53,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
-// Platform-uploaded gallery media, served statically — never hotlinked from elsewhere
+// Local-development uploads; production media URLs point to object storage.
 app.use('/uploads', express.static(UPLOAD_DIR));
 
 app.get('/api/health', (req, res) => res.json({ success: true, message: 'EventPulse API is running', time: new Date() }));

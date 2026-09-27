@@ -2,19 +2,13 @@ services:
   - type: web
     name: eventpulse
     runtime: node
-    plan: starter
+    plan: free
     buildCommand: npm ci --prefix backend && npm ci --prefix frontend --include=dev && npm run build --prefix frontend
     startCommand: npm start --prefix backend
     healthCheckPath: /api/health
-    disk:
-      name: eventpulse-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
-      - key: CLIENT_URL
-        value: https://eventpulse.onrender.com
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
@@ -30,9 +24,17 @@ services:
       - key: OWNER_PASSWORD
         sync: false
       - key: MEDIA_UPLOAD_DIR
-        value: /var/data/uploads
+        value: /tmp/eventpulse-uploads
       - key: VOICE_FEEDBACK_DIR
-        value: /var/data/feedback-audio
+        value: /tmp/eventpulse-feedback-audio
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_MEDIA_BUCKET
+        value: eventpulse-media
+      - key: SUPABASE_VOICE_BUCKET
+        value: eventpulse-voice
       - key: MAX_UPLOAD_MB
         value: 15
       - key: MAX_VOICE_FEEDBACK_MB
