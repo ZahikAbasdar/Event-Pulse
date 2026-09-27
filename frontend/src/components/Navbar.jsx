@@ -15,6 +15,7 @@ export default function Navbar() {
     { to: '/', label: 'Home' },
     { to: '/events', label: 'Events' },
     { to: '/societies', label: 'Societies' },
+    { to: '/developer', label: 'Developer' },
   ];
 
   return (

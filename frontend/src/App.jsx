@@ -11,6 +11,7 @@ import EventDetail from './pages/EventDetail';
 import CompetitionDetail from './pages/CompetitionDetail';
 import SocietiesList from './pages/SocietiesList';
 import SocietyPage from './pages/SocietyPage';
+import DeveloperProfile from './pages/DeveloperProfile';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import ParticipantTickets from './pages/ParticipantTickets';
 import Profile from './pages/Profile';
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/feedback/:shareSlug" element={<PublicFeedbackForm />} />
         <Route path="/societies" element={<SocietiesList />} />
         <Route path="/societies/:slug" element={<SocietyPage />} />
+        <Route path="/developer" element={<DeveloperProfile />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
       </Route>
 

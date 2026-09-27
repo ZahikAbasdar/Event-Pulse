@@ -13,7 +13,10 @@ export default function PublicLayout() {
         <Outlet />
       </main>
       <footer className="mt-24 border-t border-white/30 py-8 text-center text-xs text-gray-500 dark:border-white/10 dark:text-gray-500">
-        © {new Date().getFullYear()} EventPulse — built for PCTE Group of Institutes.
+        <p>© {new Date().getFullYear()} EventPulse — built for PCTE Group of Institutes.</p>
+        <p className="mt-2">
+          Made by <a href="/developer" className="font-semibold text-maroon-600 hover:underline dark:text-gold-400">Zahik Abas</a>
+        </p>
       </footer>
     </div>
   );

@@ -38,6 +38,73 @@ body {
   66% { transform: translate(-3%, -4%) scale(0.95); }
 }
 
+.developer-photo-enter {
+  animation: developerRise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.developer-copy-enter {
+  animation: developerRise 700ms 120ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.developer-orbit {
+  position: absolute;
+  inset: -7%;
+  border: 1px solid rgba(201, 162, 39, 0.45);
+  border-radius: 46% 54% 57% 43% / 45% 42% 58% 55%;
+  animation: developerOrbit 14s linear infinite;
+}
+.developer-orbit::before,
+.developer-orbit::after {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #f5d56b, #8b2432);
+  box-shadow: 0 0 22px rgba(201, 162, 39, 0.65);
+  content: '';
+}
+.developer-orbit::before { top: 13%; left: 17%; }
+.developer-orbit::after { right: 10%; bottom: 18%; width: 8px; height: 8px; }
+.developer-photo-frame {
+  animation: developerMorph 10s ease-in-out infinite;
+}
+.developer-status {
+  animation: developerBob 4s ease-in-out infinite;
+}
+.developer-contact:hover,
+.developer-social:hover {
+  transform: translateY(-4px);
+}
+.developer-social {
+  animation-fill-mode: both;
+}
+.developer-social:hover > div > svg {
+  transform: translate(3px, -3px);
+}
+@keyframes developerRise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes developerOrbit {
+  to { transform: rotate(360deg); }
+}
+@keyframes developerMorph {
+  0%, 100% { border-radius: 2rem; }
+  50% { border-radius: 2.3rem 1.8rem 2.5rem 1.9rem; }
+}
+@keyframes developerBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .developer-photo-enter,
+  .developer-copy-enter,
+  .developer-orbit,
+  .developer-photo-frame,
+  .developer-status,
+  .developer-social {
+    animation: none;
+  }
+}
+
 @layer components {
   /* ---------- Liquid Glass card: frosted, refractive, specular highlight ---------- */
   .glass-card {

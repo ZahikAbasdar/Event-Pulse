@@ -19,6 +19,7 @@ what is happening — as it happens.
 [Explore the platform](#-the-experience) ·
 [Get started](#-run-eventpulse-locally) ·
 [See the analytics prototype](#-live-analytics-at-a-glance) ·
+[Meet the developer](https://eventpulse-9fpd.onrender.com/developer) ·
 [Open the live app](https://eventpulse-9fpd.onrender.com)
 
 </div>
@@ -297,6 +298,7 @@ See [`backend/.env.example`](backend/.env.example) for the full template.
 | `/events/:slug/competitions/:compSlug` | Competition details and rules |
 | `/events/:slug/competitions/:compSlug/leaderboard` | Public leaderboard |
 | `/societies` · `/societies/:slug` | PCTE communities |
+| `/developer` | Developer profile, contact details, and social profiles |
 | `/feedback/:shareSlug` | Public, no-login feedback form |
 | `/dashboard` | Organizer overview and live charts |
 | `/dashboard/forms` | Generate and share feedback forms |
