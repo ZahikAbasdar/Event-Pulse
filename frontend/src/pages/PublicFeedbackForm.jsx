@@ -192,31 +192,29 @@ export default function PublicFeedbackForm() {
           </div>
         ))}
 
-        {form.eventFeedback && (
-          <fieldset className="space-y-3 border-t border-gray-100 pt-5 dark:border-gray-800">
-            <legend className="text-sm font-semibold text-gray-900 dark:text-white">Voice feedback (optional)</legend>
-            <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
-              If you submit a recording, it is stored privately with your response and retained permanently for event analysis. Only authorized event administrators can access it.
-            </p>
-            <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
-              <input type="checkbox" checked={voiceConsent} onChange={(event) => setVoiceConsent(event.target.checked)} />
-              I agree to have my voice recording stored permanently for feedback analysis.
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {!recording ? (
-                <button type="button" onClick={startRecording} disabled={!voiceConsent || submitting} className="btn-secondary !py-2 text-xs">
-                  <Mic size={15} /> {voiceBlob ? 'Record again' : 'Record voice feedback'}
-                </button>
-              ) : (
-                <button type="button" onClick={stopRecording} className="btn-primary !py-2 text-xs">
-                  <Square size={14} /> Stop recording
-                </button>
-              )}
-              {recording && <span role="status" className="self-center text-xs font-semibold text-red-600">Recording…</span>}
-            </div>
-            {voiceUrl && <audio controls src={voiceUrl} className="w-full" aria-label="Preview voice feedback recording" />}
-          </fieldset>
-        )}
+        <fieldset className="space-y-3 border-t border-gray-100 pt-5 dark:border-gray-800">
+          <legend className="text-sm font-semibold text-gray-900 dark:text-white">Voice feedback (optional)</legend>
+          <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
+            If you submit a recording, it is stored privately with your response and retained permanently for event analysis. Only authorized event administrators can access it.
+          </p>
+          <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <input type="checkbox" checked={voiceConsent} onChange={(event) => setVoiceConsent(event.target.checked)} />
+            I agree to have my voice recording stored permanently for feedback analysis.
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {!recording ? (
+              <button type="button" onClick={startRecording} disabled={!voiceConsent || submitting} className="btn-secondary !py-2 text-xs">
+                <Mic size={15} /> {voiceBlob ? 'Record again' : 'Record voice feedback'}
+              </button>
+            ) : (
+              <button type="button" onClick={stopRecording} className="btn-primary !py-2 text-xs">
+                <Square size={14} /> Stop recording
+              </button>
+            )}
+            {recording && <span role="status" className="self-center text-xs font-semibold text-red-600">Recording…</span>}
+          </div>
+          {voiceUrl && <audio controls src={voiceUrl} className="w-full" aria-label="Preview voice feedback recording" />}
+        </fieldset>
 
         <button type="submit" disabled={submitting} className="btn-primary w-full !py-3">
           <Send size={15} /> {submitting ? 'Submitting...' : 'Submit Feedback'}

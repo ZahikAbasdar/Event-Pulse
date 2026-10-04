@@ -47,7 +47,10 @@ export default function EventDetail() {
   }, [slug, category]);
 
   const handleRegister = async () => {
-    if (!user) return toast.error('Please log in to register');
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: `/events/${slug}` } } });
+      return;
+    }
     setRegistering(true);
     try {
       await api.post(`/events/${event._id}/register`, { ticketTypeName: 'General' });
@@ -84,20 +87,12 @@ export default function EventDetail() {
           <div className="mt-6 flex flex-wrap gap-5 text-sm text-white/80">
             <span className="flex items-center gap-2"><CalendarDays size={16} /> {new Date(event.startDate).toLocaleDateString()} – {new Date(event.endDate).toLocaleDateString()}</span>
             {event.venue && <span className="flex items-center gap-2"><MapPin size={16} /> {event.venue}</span>}
-            {slug !== 'jasmine-sandlas-koshish-2026' && (
-              <span className="flex items-center gap-2"><Users size={16} /> {event.stats?.registrations || 0} registered</span>
-            )}
+            <span className="flex items-center gap-2"><Users size={16} /> {event.stats?.registrations || 0} registered</span>
           </div>
           <div className="mt-7 flex flex-wrap gap-3">
-            {slug === 'jasmine-sandlas-koshish-2026' ? (
-              <a href="https://pcte.edu.in/enquire" target="_blank" rel="noopener noreferrer" className="btn-gold !px-6 !py-3">
-                Enquire with PCTE
-              </a>
-            ) : (
-              <button onClick={handleRegister} disabled={registering} className="btn-gold !px-6 !py-3">
-                <QrCode size={16} /> {registering ? 'Registering...' : 'Register for this event'}
-              </button>
-            )}
+            <button onClick={handleRegister} disabled={registering} className="btn-gold !px-6 !py-3">
+              <QrCode size={16} /> {registering ? 'Registering...' : 'Register for this event'}
+            </button>
             <Link to={`/events/${slug}/gallery`} className="btn-secondary !border-white/40 !bg-white/10 !px-6 !py-3 !text-white hover:!bg-white/20">
               <ImageIcon size={16} /> Gallery
             </Link>

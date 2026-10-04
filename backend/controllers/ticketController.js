@@ -2,13 +2,13 @@ const { v4: uuidv4 } = require('uuid');
 const QRCode = require('qrcode');
 const Ticket = require('../models/Ticket');
 const Event = require('../models/Event');
-const Form = require('../models/Form');
 const asyncHandler = require('../middleware/asyncHandler');
 const { ApiError } = require('../middleware/errorHandler');
 const { logAudit } = require('../utils/audit');
 const { getIO } = require('../utils/socket');
 const getPublicBaseUrl = require('../utils/publicUrl');
 const refreshTicketFeedbackLinks = require('../utils/refreshTicketFeedbackLinks');
+const ensureEventFeedbackForm = require('../utils/ensureEventFeedbackForm');
 
 // @route POST /api/events/:eventId/register  (participant self-registers, gets a QR ticket)
 exports.registerForEvent = asyncHandler(async (req, res) => {
@@ -33,7 +33,7 @@ exports.registerForEvent = asyncHandler(async (req, res) => {
   // If this event has an active feedback form, generate a second QR that goes
   // straight to it — this is what the participant scans (or taps) to give
   // feedback for this specific event.
-  const activeForm = await Form.findOne({ event: event._id, isActive: true }).sort('-createdAt');
+  const activeForm = await ensureEventFeedbackForm(event, event.createdBy);
   let feedbackUrl = null;
   let feedbackQrDataUrl = null;
   if (activeForm) {

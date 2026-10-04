@@ -96,6 +96,8 @@ an organizer has uploaded an authorized event photograph.*
 - Koshish competition listings with rules, team sizes, timing, and scoring.
 - Event registration, QR tickets, capacity limits, and idempotent staff
   check-in.
+- Every published event supports participant registration and receives its own
+  event-specific feedback form with optional voice recording.
 - Uploadable cover images and locally bundled artwork as a fallback.
 
 </details>
@@ -116,6 +118,7 @@ an organizer has uploaded an authorized event photograph.*
 - Public share links and QR codes; feedback submission does not require login.
 - Scanning an event's QR code opens that event's public feedback form directly
   on the deployed site.
+- Every feedback form includes optional, consent-based voice recording.
 - Participant fields for name, roll number, class, batch, block, phone, and
   email.
 - Optional voice feedback stored outside the public uploads folder and
@@ -220,13 +223,16 @@ set `VITE_API_PROXY_TARGET` before starting Vite.
 
 1. Sign in as an administrator or event manager and open
    [Feedback Forms](https://eventpulse-9fpd.onrender.com/dashboard/forms).
-2. Each managed event has its own public feedback link and QR code. The QR
+2. Every event gets a feedback form automatically when it is registered for or
+   when an administrator opens Feedback Forms. Each event has its own public
+   feedback link and QR code. The QR
    points to `https://eventpulse-9fpd.onrender.com/feedback/<shareSlug>` in
    production; scanning it opens the matching feedback form without a login.
    Ticket feedback QR codes include the participant's ticket reference; opening
    **My Tickets** refreshes older saved QR links after a deployment.
 3. Participants enter the requested details, answer the event's ten questions,
-   and submit. The response is stored with that event and appears in feedback
+   and submit. Optional voice recording is available on the feedback form. The
+   response is stored with that event and appears in feedback
    analytics; the organizer dashboard's four graphs (responses over time,
    responses per event, rating breakdown, and voice-response breakdown) refresh
    immediately through Socket.IO, with a 20-second polling fallback. The

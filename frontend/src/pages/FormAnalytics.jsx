@@ -233,7 +233,7 @@ export default function FormAnalytics() {
             </div>
           )}
 
-          {selectedForm?.eventFeedback && (
+          {selectedForm && (
             <section className="glass-card space-y-4 p-5">
               <div>
                 <h2 className="font-display font-bold text-gray-900 dark:text-white">Voice feedback recordings</h2>

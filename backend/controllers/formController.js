@@ -11,9 +11,9 @@ const Ticket = require('../models/Ticket');
 const { ApiError } = require('../middleware/errorHandler');
 const asyncHandler = require('../middleware/asyncHandler');
 const { getIO } = require('../utils/socket');
-const eventFeedbackQuestions = require('../utils/eventFeedbackQuestions');
 const objectStorage = require('../utils/objectStorage');
 const getPublicBaseUrl = require('../utils/publicUrl');
+const ensureEventFeedbackForm = require('../utils/ensureEventFeedbackForm');
 
 const VOICE_FEEDBACK_DIR = path.resolve(__dirname, '..', process.env.VOICE_FEEDBACK_DIR || 'private/feedback-audio');
 const VOICE_FEEDBACK_BUCKET = process.env.SUPABASE_VOICE_BUCKET || 'eventpulse-voice';
@@ -46,27 +46,10 @@ exports.ensureEventFeedbackForms = asyncHandler(async (req, res) => {
   const filter = { organization: req.user.organization };
   if (!['super_admin', 'org_admin'].includes(req.user.role)) filter.managers = req.user._id;
   const events = await Event.find(filter).sort('title');
-  const eventIds = events.map((event) => event._id);
-  const forms = await Form.find({ organization: req.user.organization, event: { $in: eventIds }, eventFeedback: true });
-  const formByEvent = new Map(forms.map((form) => [form.event.toString(), form]));
-
-  for (const event of events) {
-    if (formByEvent.has(event._id.toString())) continue;
-    const form = await Form.create({
-      organization: req.user.organization,
-      event: event._id,
-      title: `${event.title} — Event Feedback`,
-      description: `Share your experience at ${event.title}. This form has ten event-specific questions and does not require an account.`,
-      questions: eventFeedbackQuestions(event),
-      shareSlug: uuidv4().slice(0, 12),
-      createdBy: req.user._id,
-      isPublic: true,
-      isActive: true,
-      eventFeedback: true,
-      requiresAcademicId: false,
-    });
-    formByEvent.set(event._id.toString(), form);
-  }
+  const formByEvent = new Map(await Promise.all(events.map(async (event) => [
+    event._id.toString(),
+    await ensureEventFeedbackForm(event, req.user._id),
+  ])));
 
   const links = await Promise.all(events.map(async (event) => {
     const form = formByEvent.get(event._id.toString());
