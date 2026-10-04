@@ -1,77 +1,61 @@
 const asyncHandler = require('../middleware/asyncHandler');
 const { ApiError } = require('../middleware/errorHandler');
 
-const CHANNEL_HANDLE = '@pctegroupofinstitutes';
-const YOUTUBE_API = 'https://www.googleapis.com/youtube/v3';
-const PLAYLIST_CACHE_MS = 60 * 60 * 1000;
-let uploadsPlaylistCache = null;
+const CHANNEL_ID = 'UCanrHeEVzkCQ4_clkqMMT-A';
+const FEED_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+const FEED_CACHE_MS = 15 * 60 * 1000;
+let feedCache = null;
 
 exports.getChannelStatus = (req, res) => {
-  res.json({ success: true, individualVideoCardsEnabled: Boolean(process.env.YOUTUBE_API_KEY) });
+  res.json({ success: true, individualVideoCardsEnabled: true });
 };
 
-async function youtubeRequest(path, params) {
-  const url = new URL(`${YOUTUBE_API}/${path}`);
-  Object.entries({ ...params, key: process.env.YOUTUBE_API_KEY }).forEach(([key, value]) => {
-    if (value) url.searchParams.set(key, value);
-  });
+function decodeXml(value) {
+  return value
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([\da-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
+async function getChannelVideos() {
+  if (feedCache && feedCache.expiresAt > Date.now()) return feedCache.videos;
 
   let response;
   try {
-    response = await fetch(url);
+    response = await fetch(FEED_URL, { signal: AbortSignal.timeout(10000) });
   } catch (err) {
-    console.error('[youtube] Data API request failed:', err.message);
-    throw new ApiError(502, 'Could not reach the YouTube Data API');
+    console.error('[youtube] Public uploads feed request failed:', err.message);
+    throw new ApiError(502, 'Could not reach the official YouTube channel feed');
   }
 
-  const data = await response.json();
   if (!response.ok) {
-    console.error('[youtube] Data API returned an error:', data.error?.message || response.statusText);
-    throw new ApiError(502, 'The YouTube Data API request failed');
-  }
-  return data;
-}
-
-async function getUploadsPlaylistId() {
-  if (uploadsPlaylistCache && uploadsPlaylistCache.expiresAt > Date.now()) {
-    return uploadsPlaylistCache.id;
+    console.error('[youtube] Public uploads feed returned an error:', response.statusText);
+    throw new ApiError(502, 'The official YouTube channel feed is unavailable');
   }
 
-  const data = await youtubeRequest('channels', {
-    part: 'contentDetails',
-    forHandle: CHANNEL_HANDLE,
-  });
-  const playlistId = data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-  if (!playlistId) throw new ApiError(502, 'The configured YouTube channel has no public uploads playlist');
+  const xml = await response.text();
+  const videos = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map(([, entry]) => {
+    const videoId = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1];
+    const title = entry.match(/<title>([\s\S]*?)<\/title>/)?.[1];
+    const publishedAt = entry.match(/<published>([^<]+)<\/published>/)?.[1];
+    if (!videoId || !/^[\w-]{11}$/.test(videoId)) return null;
+    return {
+      videoId,
+      title: title ? decodeXml(title) : 'PCTE video',
+      publishedAt: publishedAt || null,
+      thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    };
+  }).filter(Boolean);
 
-  uploadsPlaylistCache = { id: playlistId, expiresAt: Date.now() + PLAYLIST_CACHE_MS };
-  return playlistId;
+  feedCache = { videos, expiresAt: Date.now() + FEED_CACHE_MS };
+  return videos;
 }
 
 exports.listChannelVideos = asyncHandler(async (req, res) => {
-  if (!process.env.YOUTUBE_API_KEY) {
-    throw new ApiError(503, 'YouTube video listing is not configured. Set YOUTUBE_API_KEY in backend/.env.');
-  }
-
-  const playlistId = await getUploadsPlaylistId();
-  const data = await youtubeRequest('playlistItems', {
-    part: 'snippet,contentDetails',
-    playlistId,
-    maxResults: '12',
-    pageToken: typeof req.query.pageToken === 'string' ? req.query.pageToken : '',
-  });
-
-  const videos = (data.items || []).map((item) => ({
-    videoId: item.contentDetails?.videoId,
-    title: item.snippet?.title || 'PCTE video',
-    description: item.snippet?.description || '',
-    publishedAt: item.contentDetails?.videoPublishedAt || item.snippet?.publishedAt,
-    thumbnailUrl:
-      item.snippet?.thumbnails?.high?.url ||
-      item.snippet?.thumbnails?.medium?.url ||
-      item.snippet?.thumbnails?.default?.url ||
-      null,
-  })).filter((video) => video.videoId);
-
-  res.json({ success: true, videos, nextPageToken: data.nextPageToken || null });
+  const videos = await getChannelVideos();
+  res.json({ success: true, videos, nextPageToken: null });
 });

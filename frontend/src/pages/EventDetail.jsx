@@ -187,7 +187,6 @@ export default function EventDetail() {
         <SocialMediaCard
           socialLinks={socialLinks}
           eventTitle={event.title}
-          autoPlayHighlight={slug === 'jasmine-sandlas-koshish-2026'}
         />
       </div>
 

@@ -36,7 +36,7 @@ app.use(helmet({
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
       'connect-src': ["'self'", 'ws:', 'wss:'],
       'frame-src': ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
-      'img-src': ["'self'", 'data:', 'blob:', ...(supabaseOrigin ? [supabaseOrigin] : [])],
+      'img-src': ["'self'", 'data:', 'blob:', 'https://i.ytimg.com', ...(supabaseOrigin ? [supabaseOrigin] : [])],
       'media-src': ["'self'", 'blob:', ...(supabaseOrigin ? [supabaseOrigin] : [])],
     },
   },

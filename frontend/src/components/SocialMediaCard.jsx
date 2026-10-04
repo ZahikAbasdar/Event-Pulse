@@ -2,18 +2,66 @@ import { useCallback, useEffect, useState } from 'react';
 import { Facebook, Instagram, Youtube, PlayCircle, LoaderCircle } from 'lucide-react';
 import api from '../api/client';
 
+function YouTubeVideoCard({ video, eventTitle }) {
+  const [playing, setPlaying] = useState(false);
+
+  return (
+    <div
+      className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800"
+      onPointerEnter={(event) => {
+        if (event.pointerType === 'mouse') setPlaying(true);
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType === 'mouse') setPlaying(false);
+      }}
+    >
+      <div className="relative aspect-video bg-gray-950">
+        {playing ? (
+          <iframe
+            className="h-full w-full"
+            src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.videoId)}?autoplay=1&mute=1&playsinline=1&rel=0`}
+            title={video.title}
+            allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPlaying(true)}
+            className="group relative h-full w-full"
+            aria-label={`Play ${video.title}`}
+          >
+            <img
+              src={video.thumbnailUrl || `https://i.ytimg.com/vi/${encodeURIComponent(video.videoId)}/hqdefault.jpg`}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover"
+            />
+            <span className="absolute inset-0 grid place-items-center bg-black/15 transition group-hover:bg-black/35">
+              <PlayCircle size={48} className="text-white drop-shadow-lg transition group-hover:scale-110" />
+            </span>
+          </button>
+        )}
+      </div>
+      <p className="truncate px-3 py-2 text-sm font-medium text-gray-800 dark:text-gray-200" title={video.title}>
+        {video.title || `${eventTitle} video`}
+      </p>
+    </div>
+  );
+}
+
 /**
  * "Live & Social" glass card for an event page — embeds a highlight/live
  * YouTube video via the official iframe embed (not a hotlinked image), plus
  * link-out buttons to the organization's official social channels.
  * Renders nothing if the event has no social links configured.
  */
-export default function SocialMediaCard({ socialLinks, eventTitle, autoPlayHighlight = false }) {
+export default function SocialMediaCard({ socialLinks, eventTitle }) {
   const [videos, setVideos] = useState([]);
   const [nextPageToken, setNextPageToken] = useState(null);
   const [loadingVideos, setLoadingVideos] = useState(false);
   const [videoError, setVideoError] = useState('');
-  const [videoListingUnavailable, setVideoListingUnavailable] = useState(false);
   const { facebookUrl, instagramUrl, youtubeChannelUrl, youtubeVideoId } = socialLinks || {};
 
   const loadVideos = useCallback(async (pageToken = null) => {
@@ -25,37 +73,16 @@ export default function SocialMediaCard({ socialLinks, eventTitle, autoPlayHighl
       });
       setVideos((current) => pageToken ? [...current, ...data.videos] : data.videos);
       setNextPageToken(data.nextPageToken);
-      setVideoListingUnavailable(false);
     } catch (err) {
-      if (err.response?.status === 503) {
-        setVideoListingUnavailable(true);
-      } else {
-        setVideoError(err.response?.data?.message || 'Could not load channel videos.');
-      }
+      setVideoError(err.response?.data?.message || 'Could not load channel videos.');
     } finally {
       setLoadingVideos(false);
     }
   }, []);
 
-  const checkVideoListing = useCallback(async () => {
-    setLoadingVideos(true);
-    try {
-      const { data } = await api.get('/youtube/status');
-      if (data.individualVideoCardsEnabled) {
-        await loadVideos();
-      } else {
-        setVideoListingUnavailable(true);
-        setLoadingVideos(false);
-      }
-    } catch (err) {
-      setVideoError(err.response?.data?.message || 'Could not check YouTube video listing settings.');
-      setLoadingVideos(false);
-    }
-  }, [loadVideos]);
-
   useEffect(() => {
-    if (youtubeChannelUrl) checkVideoListing();
-  }, [youtubeChannelUrl, checkVideoListing]);
+    if (youtubeChannelUrl) loadVideos();
+  }, [youtubeChannelUrl, loadVideos]);
 
   if (!facebookUrl && !instagramUrl && !youtubeChannelUrl && !youtubeVideoId) return null;
 
@@ -66,67 +93,27 @@ export default function SocialMediaCard({ socialLinks, eventTitle, autoPlayHighl
       </h2>
 
       {youtubeVideoId && (
-        <div className="mb-5 aspect-video w-full overflow-hidden rounded-2xl">
-          <iframe
-            className="h-full w-full"
-            src={`https://www.youtube.com/embed/${encodeURIComponent(youtubeVideoId)}${autoPlayHighlight ? `?autoplay=1&mute=1&playsinline=1&loop=1&playlist=${encodeURIComponent(youtubeVideoId)}` : ''}`}
-            title={autoPlayHighlight ? `${eventTitle} performance video` : `${eventTitle} highlight video`}
-            allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
+        <div className="mb-5">
+          <YouTubeVideoCard
+            video={{
+              videoId: youtubeVideoId,
+              title: `${eventTitle} highlight video`,
+              thumbnailUrl: `https://i.ytimg.com/vi/${encodeURIComponent(youtubeVideoId)}/hqdefault.jpg`,
+            }}
+            eventTitle={eventTitle}
           />
         </div>
       )}
 
-      {autoPlayHighlight && youtubeChannelUrl && !youtubeVideoId && (
-        <div className="mb-5 flex aspect-video items-center justify-center rounded-2xl bg-gradient-to-br from-maroon-950 via-maroon-800 to-gold-900 p-6 text-center text-white">
-          <div className="max-w-md">
-            <Youtube className="mx-auto mb-3 text-red-300" size={30} />
-            <h3 className="font-display text-xl font-bold">Jasmine Sandlas performance video</h3>
-            <p className="mt-2 text-sm text-white/80">
-              The performance is scheduled for October 9, 2026. Its video will play here once PCTE publishes it.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {youtubeChannelUrl && !autoPlayHighlight && (
+      {youtubeChannelUrl && (
         <section className="mb-5">
           <h3 className="mb-3 flex items-center gap-2 font-semibold text-gray-900 dark:text-white">
-            <Youtube size={17} className="text-red-500" /> Videos from the official PCTE channel
+            <Youtube size={17} className="text-red-500" /> Latest videos from the official PCTE channel
           </h3>
-          <div className="mb-5 aspect-video w-full overflow-hidden rounded-2xl">
-            <iframe
-              className="h-full w-full"
-              src="https://www.youtube.com/embed/videoseries?list=UUanrHeEVzkCQ4_clkqMMT-A"
-              title="PCTE Group of Institutes YouTube uploads"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
-          {videoListingUnavailable && (
-            <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-              Browse the complete uploads playlist above. Add a YouTube Data API key to show individual videos as cards here.
-            </p>
-          )}
           {videos.length > 0 && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {videos.map((video) => (
-                <div key={video.videoId} className="overflow-hidden rounded-xl border border-gray-100 dark:border-gray-800">
-                  <div className="aspect-video">
-                    <iframe
-                      className="h-full w-full"
-                      src={`https://www.youtube.com/embed/${encodeURIComponent(video.videoId)}`}
-                      title={video.title}
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                  <p className="truncate px-3 py-2 text-sm font-medium text-gray-800 dark:text-gray-200" title={video.title}>
-                    {video.title}
-                  </p>
-                </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {videos.filter((video) => video.videoId !== youtubeVideoId).map((video) => (
+                <YouTubeVideoCard key={video.videoId} video={video} eventTitle={eventTitle} />
               ))}
             </div>
           )}
@@ -135,6 +122,9 @@ export default function SocialMediaCard({ socialLinks, eventTitle, autoPlayHighl
             <p className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <LoaderCircle size={15} className="animate-spin" /> Loading video cards...
             </p>
+          )}
+          {!loadingVideos && !videoError && videos.length === 0 && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">No public videos are currently listed on the PCTE channel.</p>
           )}
           {!loadingVideos && videoError && (
             <button onClick={() => loadVideos()} className="btn-secondary mt-3 !py-2 text-xs">

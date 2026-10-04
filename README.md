@@ -322,7 +322,7 @@ participant information.
 
 | Capability | Environment variables | If not configured |
 |---|---|---|
-| YouTube channel video listings | `YOUTUBE_API_KEY` | The official channel/playlist embeds remain available; API-populated video cards are disabled. |
+| YouTube channel video listings | None | The latest public uploads are read from PCTE's official YouTube feed. |
 | AI-assisted tools | `AI_PROVIDER_API_KEY`, optional `AI_PROVIDER_BASE_URL` | Provider-backed AI answers are unavailable. |
 | Certificate email delivery | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_PORT`/`SMTP_FROM` | Generated certificates remain downloadable but are not emailed. |
 | Persistent media/audio storage | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, optional bucket names | Local development falls back to local disk; production refuses to start without remote storage. |
@@ -376,8 +376,8 @@ See [`backend/routes/`](backend/routes/) for the complete route definitions.
   wired.
 - Event cards show bundled illustrations until an authorized event cover image
   is uploaded.
-- A YouTube Data API key is optional; official YouTube embeds do not require
-  the key.
+- PCTE's latest public YouTube uploads are shown as video cards without an API
+  key. Hover a card on desktop, or tap it on a touch device, to play muted.
 
 ## 🤝 Contributing
 
