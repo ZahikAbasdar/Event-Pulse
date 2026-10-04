@@ -11,11 +11,14 @@ function YouTubeVideoCard({ video, eventTitle }) {
       onPointerEnter={(event) => {
         if (event.pointerType === 'mouse') setPlaying(true);
       }}
+      onPointerLeave={(event) => {
+        if (event.pointerType === 'mouse') setPlaying(false);
+      }}
     >
       <div className="relative aspect-video bg-gray-950">
         {playing ? (
           <iframe
-            className="h-full w-full"
+            className="absolute inset-0 block h-full w-full"
             src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.videoId)}?autoplay=1&mute=1&playsinline=1&rel=0`}
             title={video.title}
             allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -26,7 +29,7 @@ function YouTubeVideoCard({ video, eventTitle }) {
           <button
             type="button"
             onClick={() => setPlaying(true)}
-            className="group relative h-full w-full"
+            className="group absolute inset-0 h-full w-full"
             aria-label={`Play ${video.title}`}
           >
             <img
