@@ -4,6 +4,13 @@ import { ArrowRight, CalendarDays, MapPin, Users } from 'lucide-react';
 import api from '../api/client';
 import { getEventCover, getSocietyCover } from '../lib/coverImages';
 import { FESTIVAL_SHOWCASES } from '../lib/societyShowcases';
+import SocialMediaCard from '../components/SocialMediaCard';
+
+const PCTE_SOCIAL_LINKS = {
+  facebookUrl: 'https://www.facebook.com/pctegroup/',
+  instagramUrl: 'https://www.instagram.com/pcteofficial/?hl=en',
+  youtubeChannelUrl: 'https://youtube.com/@pctegroupofinstitutes?si=86Z_q8rap1tIILjK',
+};
 
 export default function Home() {
   const [events, setEvents] = useState([]);
@@ -92,6 +99,10 @@ export default function Home() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="page-shell pb-8">
+        <SocialMediaCard socialLinks={PCTE_SOCIAL_LINKS} eventTitle="PCTE" />
       </section>
 
       <section className="page-shell pb-20">

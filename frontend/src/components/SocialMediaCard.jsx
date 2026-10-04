@@ -11,9 +11,6 @@ function YouTubeVideoCard({ video, eventTitle }) {
       onPointerEnter={(event) => {
         if (event.pointerType === 'mouse') setPlaying(true);
       }}
-      onPointerLeave={(event) => {
-        if (event.pointerType === 'mouse') setPlaying(false);
-      }}
     >
       <div className="relative aspect-video bg-gray-950">
         {playing ? (
@@ -82,6 +79,12 @@ export default function SocialMediaCard({ socialLinks, eventTitle }) {
 
   useEffect(() => {
     if (youtubeChannelUrl) loadVideos();
+  }, [youtubeChannelUrl, loadVideos]);
+
+  useEffect(() => {
+    if (!youtubeChannelUrl) return undefined;
+    const refreshInterval = window.setInterval(() => loadVideos(), 5 * 60 * 1000);
+    return () => window.clearInterval(refreshInterval);
   }, [youtubeChannelUrl, loadVideos]);
 
   if (!facebookUrl && !instagramUrl && !youtubeChannelUrl && !youtubeVideoId) return null;

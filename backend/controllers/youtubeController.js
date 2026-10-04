@@ -3,7 +3,7 @@ const { ApiError } = require('../middleware/errorHandler');
 
 const CHANNEL_ID = 'UCanrHeEVzkCQ4_clkqMMT-A';
 const FEED_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
-const FEED_CACHE_MS = 15 * 60 * 1000;
+const FEED_CACHE_MS = 60 * 1000;
 let feedCache = null;
 
 exports.getChannelStatus = (req, res) => {

@@ -376,8 +376,10 @@ See [`backend/routes/`](backend/routes/) for the complete route definitions.
   wired.
 - Event cards show bundled illustrations until an authorized event cover image
   is uploaded.
-- PCTE's latest public YouTube uploads are shown as video cards without an API
-  key. Hover a card on desktop, or tap it on a touch device, to play muted.
+- PCTE's latest public YouTube uploads are shown on the home page and relevant
+  event pages without an API key. The feed refreshes every five minutes while
+  a page is open. Hover a card on desktop, or tap it on a touch device, to play
+  muted.
 
 ## 🤝 Contributing
 
