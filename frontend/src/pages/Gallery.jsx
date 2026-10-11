@@ -5,6 +5,7 @@ import api from '../api/client';
 
 export default function Gallery() {
   const { slug } = useParams();
+  const instagramCarouselItems = Array.from({ length: 20 }, (_, index) => index + 1);
   const [media, setMedia] = useState([]);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,29 +44,39 @@ export default function Gallery() {
         </div>
       )}
       {event?.slug === 'jasmine-sandlas-koshish-2026' && (
-        <section className="mt-6 max-w-lg">
-          <h2 className="mb-3 font-display text-lg font-bold text-gray-900 dark:text-white">Shared Instagram post</h2>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800">
-            <iframe
-              title="Instagram post shared for the Jasmine Sandlas event"
-              src="https://www.instagram.com/p/DeTwGLXk4VR/embed/"
-              className="min-h-[540px] w-full"
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
+        <section className="mt-6">
+          <div className="mb-4">
+            <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white">Jasmine Sandlas — Instagram carousel</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Each of the 20 items is shown in its own card, loaded directly from Instagram.
+              If an item does not load,{' '}
+              <a
+                href="https://www.instagram.com/p/DeTwGLXk4VR/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-maroon-600 underline dark:text-gold-400"
+              >
+                open the original post
+              </a>.
+            </p>
           </div>
-          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            This post is embedded from Instagram and is not copied into EventPulse. If it does not load,{' '}
-            <a
-              href="https://www.instagram.com/p/DeTwGLXk4VR/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-maroon-600 underline dark:text-gold-400"
-            >
-              view it on Instagram
-            </a>.
-          </p>
+          <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
+            {instagramCarouselItems.map((itemNumber) => (
+              <article key={itemNumber} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
+                <h3 className="px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                  Item {itemNumber} of {instagramCarouselItems.length}
+                </h3>
+                <iframe
+                  title={`Instagram carousel item ${itemNumber} of ${instagramCarouselItems.length}`}
+                  src={`https://www.instagram.com/p/DeTwGLXk4VR/embed/?img_index=${itemNumber}`}
+                  className="h-[720px] w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </article>
+            ))}
+          </div>
         </section>
       )}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
@@ -98,7 +109,9 @@ export default function Gallery() {
             )}
           </div>
         ))}
-        {media.length === 0 && !error && <p className="col-span-full text-sm text-gray-500 dark:text-gray-400">No media uploaded yet for this event.</p>}
+        {media.length === 0 && !error && event?.slug !== 'jasmine-sandlas-koshish-2026' && (
+          <p className="col-span-full text-sm text-gray-500 dark:text-gray-400">No media uploaded yet for this event.</p>
+        )}
       </div>
     </div>
   );
