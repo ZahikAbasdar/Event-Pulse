@@ -9,9 +9,10 @@ const User = require('../models/User');
 const asyncHandler = require('../middleware/asyncHandler');
 const { ApiError } = require('../middleware/errorHandler');
 
-// @route GET /api/admin/organizations (super_admin only)
+// @route GET /api/admin/organizations
 exports.listOrganizations = asyncHandler(async (req, res) => {
-  const orgs = await Organization.find().sort('-createdAt');
+  const filter = req.user.role === 'super_admin' ? {} : { _id: req.user.organization };
+  const orgs = await Organization.find(filter).sort('-createdAt');
   res.json({ success: true, organizations: orgs });
 });
 

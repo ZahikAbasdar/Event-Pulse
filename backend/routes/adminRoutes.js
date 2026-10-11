@@ -37,7 +37,7 @@ router.patch(
   accessCtrl.reviewRequest
 );
 
-router.get('/organizations', protect, authorize('super_admin'), ctrl.listOrganizations);
+router.get('/organizations', protect, authorize('super_admin', 'org_admin'), ctrl.listOrganizations);
 router.get('/organizations/:id/usage', protect, authorize('super_admin'), ctrl.getOrganizationUsage);
 router.get('/benchmarking', protect, authorize('super_admin'), ctrl.crossInstitutionBenchmark);
 router.get('/audit-logs', protect, authorize('super_admin', 'org_admin'), ctrl.listAuditLogs);

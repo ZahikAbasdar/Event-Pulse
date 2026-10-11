@@ -23,7 +23,7 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const tabs = user?.role === 'super_admin'
     ? [...TABS, { id: 'accessRequests', label: 'Access Requests', icon: ShieldCheck }]
-    : TABS;
+    : TABS.filter(({ id }) => id !== 'benchmark');
 
   useEffect(() => {
     setLoading(true);
