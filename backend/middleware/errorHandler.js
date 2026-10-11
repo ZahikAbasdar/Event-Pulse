@@ -19,9 +19,12 @@ function errorHandler(err, req, res, next) {
   if (err.name === 'MulterError') {
     statusCode = err.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
     message = err.code === 'LIMIT_FILE_SIZE'
-      ? 'The voice recording exceeds the upload size limit.'
-      : 'The voice recording could not be uploaded.';
+      ? 'An optional audio or video recording exceeds the upload size limit.'
+      : 'The optional recording could not be uploaded.';
   } else if (err.message?.startsWith('Voice feedback must be')) {
+    statusCode = 400;
+    message = err.message;
+  } else if (err.message?.startsWith('Video feedback must be')) {
     statusCode = 400;
     message = err.message;
   }

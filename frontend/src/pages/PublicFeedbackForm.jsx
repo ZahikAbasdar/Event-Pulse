@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Star, Send, CheckCircle2, Mic, Square } from 'lucide-react';
+import { Star, Send, CheckCircle2, Mic, Square, Video } from 'lucide-react';
 import api from '../api/client';
 
 const BLOCKS = ['ET', 'MT', 'T Pharmacy', 'HM'];
@@ -22,9 +22,16 @@ export default function PublicFeedbackForm() {
   const [voiceConsent, setVoiceConsent] = useState(false);
   const [voiceBlob, setVoiceBlob] = useState(null);
   const [voiceUrl, setVoiceUrl] = useState('');
+  const [videoBlob, setVideoBlob] = useState(null);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [videoRecording, setVideoRecording] = useState(false);
+  const [videoConsent, setVideoConsent] = useState(false);
   const recorderRef = useRef(null);
   const streamRef = useRef(null);
+  const videoRecorderRef = useRef(null);
+  const videoStreamRef = useRef(null);
   const chunksRef = useRef([]);
+  const videoChunksRef = useRef([]);
 
   const setField = (field) => (event) => setAcademicInfo((current) => ({ ...current, [field]: event.target.value }));
 
@@ -40,6 +47,12 @@ export default function PublicFeedbackForm() {
     if (voiceUrl) URL.revokeObjectURL(voiceUrl);
   }, [voiceUrl]);
 
+  useEffect(() => () => {
+    if (videoRecorderRef.current?.state === 'recording') videoRecorderRef.current.stop();
+    videoStreamRef.current?.getTracks().forEach((track) => track.stop());
+    if (videoUrl) URL.revokeObjectURL(videoUrl);
+  }, [videoUrl]);
+
   useEffect(() => {
     api.get(`/forms/share/${shareSlug}`).then(({ data }) => setForm(data.form)).catch(() => toast.error('This form is not available')).finally(() => setLoading(false));
   }, [shareSlug]);
@@ -54,10 +67,14 @@ export default function PublicFeedbackForm() {
       const payload = new FormData();
       payload.append('answers', JSON.stringify(answerList));
       payload.append('academicInfo', JSON.stringify(academicInfo));
+      payload.append('voiceConsent', String(voiceConsent));
+      payload.append('videoConsent', String(videoConsent));
       if (ticketCode) payload.append('ticketCode', ticketCode);
-      if (voiceBlob) payload.append('voiceFeedback', voiceBlob, `voice-feedback.${voiceBlob.type.includes('mp4') ? 'm4a' : voiceBlob.type.includes('ogg') ? 'ogg' : 'webm'}`);
+      if (voiceBlob && voiceConsent) payload.append('voiceFeedback', voiceBlob, `voice-feedback.${voiceBlob.type.includes('mp4') ? 'm4a' : voiceBlob.type.includes('ogg') ? 'ogg' : 'webm'}`);
+      if (videoBlob && videoConsent) payload.append('videoFeedback', videoBlob, `video-feedback.${videoBlob.type.includes('mp4') ? 'mp4' : videoBlob.type.includes('quicktime') ? 'mov' : 'webm'}`);
 
-      await api.post(`/forms/share/${shareSlug}/responses`, payload);
+      const { data } = await api.post(`/forms/share/${shareSlug}/responses`, payload);
+      data.mediaWarnings?.forEach((warning) => toast.error(warning));
       setSubmitted(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Submission failed');
@@ -110,6 +127,67 @@ export default function PublicFeedbackForm() {
     if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
   };
 
+  const startVideoRecording = async () => {
+    if (!videoConsent) {
+      toast.error('Confirm the video feedback retention notice before recording.');
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      toast.error('Video recording is not supported by this browser.');
+      return;
+    }
+    try {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      setVideoUrl('');
+      setVideoBlob(null);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      videoStreamRef.current = stream;
+      const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/mp4']
+        .find((type) => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      videoChunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) videoChunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(videoChunksRef.current, { type: recorder.mimeType || 'video/webm' });
+        stream.getTracks().forEach((track) => track.stop());
+        videoStreamRef.current = null;
+        setVideoRecording(false);
+        if (blob.size > 25 * 1024 * 1024) {
+          toast.error('Video exceeds the 25 MB upload limit. Record a shorter clip.');
+          return;
+        }
+        setVideoBlob(blob);
+        setVideoUrl(URL.createObjectURL(blob));
+      };
+      videoRecorderRef.current = recorder;
+      recorder.start();
+      setVideoRecording(true);
+    } catch (err) {
+      videoStreamRef.current?.getTracks().forEach((track) => track.stop());
+      videoStreamRef.current = null;
+      toast.error(err.name === 'NotAllowedError' ? 'Allow camera and microphone access to record video feedback.' : 'Could not start video recording.');
+    }
+  };
+
+  const stopVideoRecording = () => {
+    if (videoRecorderRef.current?.state === 'recording') videoRecorderRef.current.stop();
+  };
+
+  const selectVideo = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('Video exceeds the 25 MB upload limit. Choose a smaller clip.');
+      event.target.value = '';
+      return;
+    }
+    if (videoUrl) URL.revokeObjectURL(videoUrl);
+    setVideoBlob(file);
+    setVideoUrl(URL.createObjectURL(file));
+  };
+
   if (loading) return <div className="page-shell py-20 text-center text-gray-400">Loading form...</div>;
   if (!form) return <div className="page-shell py-20 text-center text-gray-400">This feedback form isn't available.</div>;
 
@@ -151,7 +229,7 @@ export default function PublicFeedbackForm() {
             </select>
             {form.eventFeedback && (
               <>
-                <input required type="tel" autoComplete="tel" pattern="\+[1-9][0-9]{7,14}" placeholder="Phone (+country code)" className="input-field" value={academicInfo.phone} onChange={setField('phone')} />
+                <input required type="tel" autoComplete="tel" pattern="[0-9\s().-]{7,20}" placeholder="Phone number (no country code)" className="input-field" value={academicInfo.phone} onChange={setField('phone')} />
                 <input required type="email" autoComplete="email" placeholder="Email address" className="input-field col-span-2" value={academicInfo.email} onChange={setField('email')} />
               </>
             )}
@@ -203,7 +281,7 @@ export default function PublicFeedbackForm() {
           </label>
           <div className="flex flex-wrap gap-2">
             {!recording ? (
-              <button type="button" onClick={startRecording} disabled={!voiceConsent || submitting} className="btn-secondary !py-2 text-xs">
+              <button type="button" onClick={startRecording} disabled={!voiceConsent || videoRecording || submitting} className="btn-secondary !py-2 text-xs">
                 <Mic size={15} /> {voiceBlob ? 'Record again' : 'Record voice feedback'}
               </button>
             ) : (
@@ -216,7 +294,35 @@ export default function PublicFeedbackForm() {
           {voiceUrl && <audio controls src={voiceUrl} className="w-full" aria-label="Preview voice feedback recording" />}
         </fieldset>
 
-        <button type="submit" disabled={submitting} className="btn-primary w-full !py-3">
+        <fieldset className="space-y-3 border-t border-gray-100 pt-5 dark:border-gray-800">
+          <legend className="text-sm font-semibold text-gray-900 dark:text-white">Video feedback (optional)</legend>
+          <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
+            Record a short video or choose an existing one. It is stored privately with your response for later event analysis. You can submit the form without a video.
+          </p>
+          <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+            <input type="checkbox" checked={videoConsent} onChange={(event) => setVideoConsent(event.target.checked)} />
+            I agree to have my video recording stored for feedback analysis.
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            {!videoRecording ? (
+              <button type="button" onClick={startVideoRecording} disabled={!videoConsent || recording || submitting} className="btn-secondary !py-2 text-xs">
+                <Video size={15} /> {videoBlob ? 'Record video again' : 'Record video feedback'}
+              </button>
+            ) : (
+              <button type="button" onClick={stopVideoRecording} className="btn-primary !py-2 text-xs">
+                <Square size={14} /> Stop video
+              </button>
+            )}
+            <label className="btn-secondary !py-2 text-xs">
+              Choose a video
+              <input type="file" accept="video/webm,video/mp4,video/quicktime" className="sr-only" onChange={selectVideo} disabled={submitting || videoRecording} />
+            </label>
+            {videoRecording && <span role="status" className="text-xs font-semibold text-red-600">Recording…</span>}
+          </div>
+          {videoUrl && <video controls playsInline src={videoUrl} className="max-h-72 w-full rounded-xl bg-black" aria-label="Preview video feedback recording" />}
+        </fieldset>
+
+        <button type="submit" disabled={submitting || recording || videoRecording} className="btn-primary w-full !py-3">
           <Send size={15} /> {submitting ? 'Submitting...' : 'Submit Feedback'}
         </button>
       </form>

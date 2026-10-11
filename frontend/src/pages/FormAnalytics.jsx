@@ -30,7 +30,9 @@ export default function FormAnalytics() {
   const [aiLoading, setAiLoading] = useState(false);
   const [responses, setResponses] = useState([]);
   const [voiceUrls, setVoiceUrls] = useState({});
+  const [videoUrls, setVideoUrls] = useState({});
   const voiceUrlsRef = useRef(new Map());
+  const videoUrlsRef = useRef(new Map());
   const selectedForm = forms.find((f) => f._id === selectedId);
 
   useEffect(() => {
@@ -46,6 +48,7 @@ export default function FormAnalytics() {
     setAnalytics(null);
     setResponses([]);
     setVoiceUrls({});
+    setVideoUrls({});
     Promise.all([
       api.get(`/forms/${selectedId}/analytics`),
       api.get(`/forms/${selectedId}/responses`),
@@ -61,12 +64,16 @@ export default function FormAnalytics() {
       active = false;
       voiceUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
       voiceUrlsRef.current.clear();
+      videoUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      videoUrlsRef.current.clear();
     };
   }, [selectedId]);
 
   useEffect(() => () => {
     voiceUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     voiceUrlsRef.current.clear();
+    videoUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    videoUrlsRef.current.clear();
   }, []);
 
   useEffect(() => {
@@ -105,6 +112,17 @@ export default function FormAnalytics() {
       setVoiceUrls((current) => ({ ...current, [responseId]: url }));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Could not load the stored voice recording.');
+    }
+  };
+
+  const loadVideoRecording = async (responseId) => {
+    try {
+      const { data: videoBlob } = await api.get(`/forms/${selectedId}/responses/${responseId}/video`, { responseType: 'blob' });
+      const url = URL.createObjectURL(videoBlob);
+      videoUrlsRef.current.set(responseId, url);
+      setVideoUrls((current) => ({ ...current, [responseId]: url }));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not load the stored video recording.');
     }
   };
 
@@ -256,6 +274,38 @@ export default function FormAnalytics() {
                       ) : (
                         <button type="button" onClick={() => loadVoiceRecording(response._id)} className="btn-secondary !py-2 text-xs">
                           Load voice recording
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          {selectedForm && (
+            <section className="glass-card space-y-4 p-5">
+              <div>
+                <h2 className="font-display font-bold text-gray-900 dark:text-white">Video feedback recordings</h2>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Recordings are retained in private storage. Only authorized organizers can stream them here.
+                </p>
+              </div>
+              {responses.filter((response) => response.videoFeedback?.fileName).length === 0 ? (
+                <p className="text-sm text-gray-400">No video recordings have been submitted for this event yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {responses.filter((response) => response.videoFeedback?.fileName).map((response) => (
+                    <div key={response._id} className="rounded-xl border border-gray-100 p-3 dark:border-gray-800">
+                      <p className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">
+                        {response.academicInfo?.name || 'Participant'} · {response.academicInfo?.rollNumber || 'No roll number'}
+                        <span className="ml-2 text-xs font-normal text-gray-500">{new Date(response.submittedAt).toLocaleString()}</span>
+                      </p>
+                      {videoUrls[response._id] ? (
+                        <video controls playsInline src={videoUrls[response._id]} className="max-h-96 w-full rounded-xl bg-black" aria-label={`Video feedback by ${response.academicInfo?.name || 'participant'}`} />
+                      ) : (
+                        <button type="button" onClick={() => loadVideoRecording(response._id)} className="btn-secondary !py-2 text-xs">
+                          Load video recording
                         </button>
                       )}
                     </div>

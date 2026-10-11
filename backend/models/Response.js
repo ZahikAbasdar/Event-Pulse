@@ -33,6 +33,12 @@ const responseSchema = new mongoose.Schema(
       originalName: { type: String, default: null },
       sizeBytes: { type: Number, default: null },
     },
+    videoFeedback: {
+      fileName: { type: String, default: null },
+      mimeType: { type: String, default: null },
+      originalName: { type: String, default: null },
+      sizeBytes: { type: Number, default: null },
+    },
     npsScore: { type: Number, default: null }, // extracted from any 'nps' question, for fast aggregation
     sentiment: { type: String, enum: ['positive', 'neutral', 'negative', null], default: null },
     submittedAt: { type: Date, default: Date.now },

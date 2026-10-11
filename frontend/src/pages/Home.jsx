@@ -8,8 +8,8 @@ import SocialMediaCard from '../components/SocialMediaCard';
 
 const PCTE_SOCIAL_LINKS = {
   facebookUrl: 'https://www.facebook.com/pctegroup/',
-  instagramUrl: 'https://www.instagram.com/pcteofficial/?hl=en',
-  youtubeChannelUrl: 'https://youtube.com/@pctegroupofinstitutes?si=86Z_q8rap1tIILjK',
+  instagramUrl: 'https://www.instagram.com/pcteofficial/',
+  youtubeChannelUrl: 'https://www.youtube.com/@pctegroupofinstitutes',
 };
 
 export default function Home() {

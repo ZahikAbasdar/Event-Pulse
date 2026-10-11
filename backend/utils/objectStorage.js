@@ -46,8 +46,8 @@ async function uploadObject({ bucket, objectPath, body, contentType }) {
       }
     );
   } catch (error) {
-    console.error('[storage] Object upload request failed:', error.message);
-    throw new Error('Could not reach persistent object storage.');
+    console.error('[storage] Object upload request failed:', error.code || error.name, error.message);
+    throw new Error('Could not reach persistent object storage. Verify SUPABASE_URL and check that the storage service is reachable.');
   }
 
   if (!response.ok) {
@@ -73,8 +73,8 @@ async function downloadObject({ bucket, objectPath }) {
       }
     );
   } catch (error) {
-    console.error('[storage] Object download request failed:', error.message);
-    throw new Error('Could not reach persistent object storage.');
+    console.error('[storage] Object download request failed:', error.code || error.name, error.message);
+    throw new Error('Could not reach persistent object storage. Verify SUPABASE_URL and check that the storage service is reachable.');
   }
 
   if (!response.ok) {

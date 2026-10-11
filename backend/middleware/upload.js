@@ -28,6 +28,7 @@ const spreadsheetUpload = multer({
 });
 
 const ALLOWED_AUDIO = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav'];
+const ALLOWED_FEEDBACK_VIDEO = ['video/webm', 'video/mp4', 'video/quicktime'];
 const voiceFeedbackMaxBytes = (Number(process.env.MAX_VOICE_FEEDBACK_MB) || 25) * 1024 * 1024;
 const mediaUpload = multer({
   storage: multer.memoryStorage(),
@@ -40,10 +41,14 @@ const mediaUpload = multer({
 
 const voiceFeedbackUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: voiceFeedbackMaxBytes, files: 1 },
+  limits: { fileSize: voiceFeedbackMaxBytes, files: 2 },
   fileFilter: (req, file, cb) => {
-    if (!ALLOWED_AUDIO.includes(file.mimetype.split(';')[0].toLowerCase())) {
+    const mimeType = file.mimetype.split(';')[0].toLowerCase();
+    if (file.fieldname === 'voiceFeedback' && !ALLOWED_AUDIO.includes(mimeType)) {
       return cb(new Error('Voice feedback must be a WebM, Ogg, MP4, MP3, or WAV audio file.'));
+    }
+    if (file.fieldname === 'videoFeedback' && !ALLOWED_FEEDBACK_VIDEO.includes(mimeType)) {
+      return cb(new Error('Video feedback must be a WebM, MP4, or QuickTime video file.'));
     }
     cb(null, true);
   },

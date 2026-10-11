@@ -6,6 +6,13 @@
 
 ### One connected platform for every event, attendee, and insight.
 
+## Description
+
+EventPulse is a full-stack event management platform for PCTE Group of
+Institutes. Participants can discover events, register, and share written,
+voice, or video feedback. Organizers can manage event activity, review
+consented recordings, and explore feedback analytics in one place.
+
 Plan PCTE festivals, welcome participants, collect thoughtful feedback, and see
 what is happening — as it happens.
 
@@ -112,22 +119,25 @@ an organizer has uploaded an authorized event photograph.*
 </details>
 
 <details>
-<summary><strong>Public feedback, QR forms & voice</strong></summary>
+<summary><strong>Public feedback, QR forms, voice & video</strong></summary>
 
 - Ten event-specific questions for generated event feedback forms.
 - Public share links and QR codes; feedback submission does not require login.
 - Scanning an event's QR code opens that event's public feedback form directly
   on the deployed site.
 - Every feedback form includes optional, consent-based voice recording.
+- Feedback forms also accept optional, consent-based video recordings; both
+  types are stored privately for authorized organizers to review later. Forms
+  submit normally without either recording.
 - Participant fields for name, roll number, class, batch, block, phone, and
   email.
-- Optional voice feedback stored outside the public uploads folder and
-  available to authorized organizers.
+- Optional voice and video recordings stored outside the public uploads folder
+  and available to authorized organizers.
 - Feedback analytics refreshed by live events and fallback polling.
 - Authorized organizers can export response data as Excel (`.xlsx`), CSV
   (`.csv`), or JSON (`.json`) from feedback analytics.
 - Persistent production storage and backups must be configured by the
-  deployment owner; see [recording storage](#-voice-feedback-storage).
+  deployment owner; see [recording storage](#-voice-and-video-feedback-storage).
 
 </details>
 
@@ -155,7 +165,7 @@ an organizer has uploaded an authorized event photograph.*
 | Persistence | MongoDB, Mongoose |
 | Real-time updates | Socket.IO |
 | Event artwork | Original local SVG covers and authorized image uploads |
-| Optional integrations | Twilio Verify, YouTube Data API, SMTP, AI provider |
+| Optional integrations | YouTube Data API, SMTP, AI provider |
 
 ## 🚀 Run EventPulse locally
 
@@ -163,7 +173,6 @@ an organizer has uploaded an authorized event photograph.*
 
 - Node.js 18 or later
 - MongoDB running locally or an Atlas connection string
-- Twilio Verify credentials to send real participant sign-in/sign-up SMS
 
 ### 1. Configure the backend
 
@@ -307,16 +316,20 @@ a guarantee of unlimited storage or availability. Render, MongoDB Atlas,
 and Supabase account setup and billing are controlled by their providers; this
 repository cannot create those accounts or enter account secrets for you.
 
-## 🎙️ Voice feedback storage
+## 🎙️ Voice and video feedback storage
 
-With Supabase configured, voice recordings are stored in the private
-`eventpulse-voice` bucket and are streamed only through the authorized
-organizer endpoint. The application has no recording-deletion endpoint or
-automatic cleanup. Local development without Supabase stores audio in
-`backend/private/feedback-audio`. **Cloud storage is not a backup:** operators
-must monitor quotas, verify backups and restore procedures, protect access to
-recordings, and establish an appropriate privacy and retention policy for
-participant information.
+With Supabase configured, voice and video recordings are stored in the private
+bucket configured by `SUPABASE_VOICE_BUCKET` (default `eventpulse-voice`) and
+are streamed only through authorized organizer endpoints. Local development
+without Supabase stores recordings in `backend/private/feedback-audio`. An
+optional recording storage failure does not discard the participant's written
+feedback; the form reports that the attachment was not saved. Gallery media
+uses the `SUPABASE_MEDIA_BUCKET` bucket, which must allow public reads because
+public event galleries serve its object URLs. The application has no recording
+deletion endpoint or automatic cleanup. **Cloud storage is not a backup:**
+operators must monitor quotas, verify backups and restore procedures, protect
+access to recordings, and establish an appropriate privacy and retention
+policy for participant information.
 
 ## 🔐 Other optional integrations
 
@@ -325,7 +338,7 @@ participant information.
 | YouTube channel video listings | None | The latest public uploads are read from PCTE's official YouTube feed. |
 | AI-assisted tools | `AI_PROVIDER_API_KEY`, optional `AI_PROVIDER_BASE_URL` | Provider-backed AI answers are unavailable. |
 | Certificate email delivery | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_PORT`/`SMTP_FROM` | Generated certificates remain downloadable but are not emailed. |
-| Persistent media/audio storage | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, optional bucket names | Local development falls back to local disk; production refuses to start without remote storage. |
+| Persistent media/audio/video storage | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, optional bucket names | Local development falls back to local disk; production refuses to start without remote storage. Confirm the Supabase project is active, the URL is correct, both buckets exist, and credentials have upload/read access. |
 | Public/proxied deployment | `CLIENT_URL` (optional) | Render's service URL is detected automatically; set this only for a custom domain/proxy. |
 
 All backend configuration belongs in the ignored local `backend/.env` file.

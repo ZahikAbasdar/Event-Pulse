@@ -20,11 +20,20 @@ router.post('/', protect, authorize('super_admin', 'org_admin', 'event_manager')
 router.post('/ai-generate', protect, authorize('super_admin', 'org_admin', 'event_manager'), ctrl.aiGenerateForm);
 router.get('/:id/responses', protect, authorize('super_admin', 'org_admin', 'event_manager'), ctrl.listResponses);
 router.get('/:id/responses/:responseId/voice', protect, authorize('super_admin', 'org_admin', 'event_manager'), ctrl.getVoiceFeedback);
+router.get('/:id/responses/:responseId/video', protect, authorize('super_admin', 'org_admin', 'event_manager'), ctrl.getVideoFeedback);
 router.get('/:id/responses/export', protect, authorize('super_admin', 'org_admin', 'event_manager'), ctrl.exportResponsesExcel);
 router.get('/:id/analytics', protect, authorize('super_admin', 'org_admin', 'event_manager'), ctrl.formAnalytics);
 
 // Public routes — no login required to respond
 router.get('/share/:shareSlug', ctrl.getPublicForm);
-router.post('/share/:shareSlug/responses', feedbackSubmitLimiter, voiceFeedbackUpload.single('voiceFeedback'), ctrl.submitPublicResponse);
+router.post(
+  '/share/:shareSlug/responses',
+  feedbackSubmitLimiter,
+  voiceFeedbackUpload.fields([
+    { name: 'voiceFeedback', maxCount: 1 },
+    { name: 'videoFeedback', maxCount: 1 },
+  ]),
+  ctrl.submitPublicResponse
+);
 
 module.exports = router;

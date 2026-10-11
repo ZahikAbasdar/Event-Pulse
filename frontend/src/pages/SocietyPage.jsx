@@ -9,8 +9,8 @@ import { FESTIVAL_SHOWCASES } from '../lib/societyShowcases';
 
 const KOSHISH_SOCIAL_LINKS = {
   facebookUrl: 'https://www.facebook.com/pctegroup/',
-  instagramUrl: 'https://www.instagram.com/pcteofficial/?hl=en',
-  youtubeChannelUrl: 'https://youtube.com/@pctegroupofinstitutes?si=86Z_q8rap1tIILjK',
+  instagramUrl: 'https://www.instagram.com/pcteofficial/',
+  youtubeChannelUrl: 'https://www.youtube.com/@pctegroupofinstitutes',
   youtubeVideoId: '36KQrBZlukY',
 };
 

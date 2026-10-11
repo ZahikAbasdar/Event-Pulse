@@ -8,13 +8,25 @@ export default function Gallery() {
   const [media, setMedia] = useState([]);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    api.get(`/events/${slug}`).then(async ({ data }) => {
-      setEvent(data.event);
-      const m = await api.get(`/media/events/${data.event._id}`);
-      setMedia(m.data.media);
-    }).finally(() => setLoading(false));
+    let active = true;
+    setLoading(true);
+    setError('');
+    api.get(`/events/${slug}`)
+      .then(async ({ data }) => {
+        if (active) setEvent(data.event);
+        const mediaResponse = await api.get(`/media/events/${data.event._id}`);
+        if (active) setMedia(mediaResponse.data.media);
+      })
+      .catch((err) => {
+        if (active) setError(err.response?.data?.message || 'Could not load this event gallery. Please try again.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, [slug]);
 
   if (loading) return <div className="page-shell py-20 text-center text-gray-400">Loading gallery...</div>;
@@ -24,17 +36,43 @@ export default function Gallery() {
       <h1 className="flex items-center gap-2 font-display text-2xl font-bold text-gray-900 dark:text-white">
         <ImageIcon className="text-maroon-500" /> {event?.title} — Gallery
       </h1>
+      {error && (
+        <div role="alert" className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          {error} If the issue persists, the gallery storage service may need to be checked by the site administrator.
+          <button type="button" onClick={() => window.location.reload()} className="ml-2 font-semibold underline">Retry</button>
+        </div>
+      )}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {media.map((m) => (
           <div key={m._id} className="overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-900">
             {m.type === 'photo' ? (
-              <img src={m.url} alt={m.caption || event.title} className="aspect-square w-full object-cover" />
+              <img
+                src={m.url}
+                alt={m.caption || event?.title || 'Event gallery photo'}
+                loading="lazy"
+                className="aspect-square w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.alt = 'This photo is currently unavailable.';
+                  e.currentTarget.classList.add('hidden');
+                }}
+              />
             ) : (
-              <video src={m.url} controls className="aspect-square w-full object-cover" />
+              <video
+                src={m.url}
+                controls
+                preload="metadata"
+                className="aspect-square w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.replaceWith(Object.assign(document.createElement('p'), {
+                    className: 'p-4 text-sm text-gray-500',
+                    textContent: 'This video is currently unavailable.',
+                  }));
+                }}
+              />
             )}
           </div>
         ))}
-        {media.length === 0 && <p className="col-span-full text-sm text-gray-500 dark:text-gray-400">No media uploaded yet for this event.</p>}
+        {media.length === 0 && !error && <p className="col-span-full text-sm text-gray-500 dark:text-gray-400">No media uploaded yet for this event.</p>}
       </div>
     </div>
   );

@@ -17,6 +17,27 @@ const ensureEventFeedbackForm = require('../utils/ensureEventFeedbackForm');
 
 const VOICE_FEEDBACK_DIR = path.resolve(__dirname, '..', process.env.VOICE_FEEDBACK_DIR || 'private/feedback-audio');
 const VOICE_FEEDBACK_BUCKET = process.env.SUPABASE_VOICE_BUCKET || 'eventpulse-voice';
+const FEEDBACK_RECORDING_TYPES = {
+  voice: {
+    field: 'voiceFeedback',
+    extensions: {
+      'audio/webm': '.webm',
+      'audio/ogg': '.ogg',
+      'audio/mp4': '.m4a',
+      'audio/mpeg': '.mp3',
+      'audio/wav': '.wav',
+      'audio/x-wav': '.wav',
+    },
+  },
+  video: {
+    field: 'videoFeedback',
+    extensions: {
+      'video/webm': '.webm',
+      'video/mp4': '.mp4',
+      'video/quicktime': '.mov',
+    },
+  },
+};
 const ACADEMIC_QUESTIONS = [
   { text: 'Name', type: 'academic_identifier', academicField: 'name', required: true },
   { text: 'Roll Number', type: 'academic_identifier', academicField: 'rollNumber', required: true },
@@ -28,6 +49,33 @@ const ACADEMIC_QUESTIONS = [
 function withAcademicQuestions(questions, requiresAcademicId) {
   if (!requiresAcademicId) return questions;
   return [...ACADEMIC_QUESTIONS, ...questions];
+}
+
+async function storeFeedbackRecording(file, kind) {
+  const { extensions } = FEEDBACK_RECORDING_TYPES[kind];
+  const mimeType = file.mimetype.split(';')[0].toLowerCase();
+  const extension = extensions[mimeType];
+  if (!extension) throw new ApiError(400, `Unsupported ${kind} feedback recording format.`);
+
+  const fileName = `${crypto.randomUUID()}${extension}`;
+  if (objectStorage.isConfigured()) {
+    await objectStorage.uploadObject({
+      bucket: VOICE_FEEDBACK_BUCKET,
+      objectPath: fileName,
+      body: file.buffer,
+      contentType: mimeType,
+    });
+  } else {
+    await fs.promises.mkdir(VOICE_FEEDBACK_DIR, { recursive: true });
+    await fs.promises.writeFile(path.join(VOICE_FEEDBACK_DIR, fileName), file.buffer, { flag: 'wx' });
+  }
+
+  return {
+    fileName,
+    mimeType,
+    originalName: path.basename(file.originalname).slice(0, 120),
+    sizeBytes: file.size,
+  };
 }
 
 // @route GET /api/forms  (organizer) — list every form across their events
@@ -186,7 +234,10 @@ exports.submitPublicResponse = asyncHandler(async (req, res) => {
     const missing = required.filter((field) => !String(academicInfo?.[field] || '').trim());
     if (missing.length) throw new ApiError(400, `Complete these participant details: ${missing.join(', ')}.`);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(academicInfo.email)) throw new ApiError(400, 'Enter a valid email address.');
-    if (!/^\+[1-9]\d{7,14}$/.test(academicInfo.phone)) throw new ApiError(400, 'Enter a phone number with its international country code.');
+    const phone = String(academicInfo.phone || '').trim();
+    if (!/^[\d\s().-]+$/.test(phone) || phone.replace(/\D/g, '').length < 7 || phone.replace(/\D/g, '').length > 15) {
+      throw new ApiError(400, 'Enter a valid phone number using 7 to 15 digits; a country code is not required.');
+    }
     if (!['ET', 'MT', 'T Pharmacy', 'HM'].includes(academicInfo.block)) throw new ApiError(400, 'Choose a valid campus block.');
     if (form.questions.length !== 10 || answers.length !== form.questions.length) {
       throw new ApiError(400, 'This event feedback form must contain and receive exactly ten answers.');
@@ -231,39 +282,25 @@ exports.submitPublicResponse = asyncHandler(async (req, res) => {
       return { question: question._id, questionText: question.text, value: answer.value };
     });
 
-  let voiceFeedback = undefined;
-  if (req.file) {
-    await fs.promises.mkdir(VOICE_FEEDBACK_DIR, { recursive: true });
-    const mimeType = req.file.mimetype.split(';')[0].toLowerCase();
-    const extensionByMimeType = {
-      'audio/webm': '.webm',
-      'audio/ogg': '.ogg',
-      'audio/mp4': '.m4a',
-      'audio/mpeg': '.mp3',
-      'audio/wav': '.wav',
-      'audio/x-wav': '.wav',
-    };
-    const extension = extensionByMimeType[mimeType];
-    if (!extension) throw new ApiError(400, 'Unsupported voice recording format.');
-    const fileName = `${crypto.randomUUID()}${extension}`;
-    if (objectStorage.isConfigured()) {
-      await objectStorage.uploadObject({
-        bucket: VOICE_FEEDBACK_BUCKET,
-        objectPath: fileName,
-        body: req.file.buffer,
-        contentType: mimeType,
-      });
-    } else {
-      await fs.promises.mkdir(VOICE_FEEDBACK_DIR, { recursive: true });
-      await fs.promises.writeFile(path.join(VOICE_FEEDBACK_DIR, fileName), req.file.buffer, { flag: 'wx' });
+  const mediaWarnings = [];
+  const uploadedFiles = {
+    voice: req.body.voiceConsent === 'true' ? req.files?.voiceFeedback?.[0] : undefined,
+    video: req.body.videoConsent === 'true' ? req.files?.videoFeedback?.[0] : undefined,
+  };
+  const saveOptionalRecording = async (file, kind) => {
+    if (!file) return undefined;
+    try {
+      return await storeFeedbackRecording(file, kind);
+    } catch (err) {
+      console.error(`[feedback] Could not store optional ${kind} recording:`, err.message);
+      mediaWarnings.push(`Your feedback was submitted, but the ${kind} recording could not be stored. Please try again later.`);
+      return undefined;
     }
-    voiceFeedback = {
-      fileName,
-      mimeType,
-      originalName: path.basename(req.file.originalname).slice(0, 120),
-      sizeBytes: req.file.size,
-    };
-  }
+  };
+  const [voiceFeedback, videoFeedback] = await Promise.all([
+    saveOptionalRecording(uploadedFiles.voice, 'voice'),
+    saveOptionalRecording(uploadedFiles.video, 'video'),
+  ]);
 
   const npsAnswer = normalizedAnswers.find((answer) => form.questions.id(answer.question)?.type === 'nps');
 
@@ -275,6 +312,7 @@ exports.submitPublicResponse = asyncHandler(async (req, res) => {
     academicInfo,
     answers: normalizedAnswers,
     voiceFeedback,
+    videoFeedback,
     npsScore: npsAnswer && npsAnswer.value !== '' ? Number(npsAnswer.value) : null,
     sentiment: tagSentiment(normalizedAnswers),
   });
@@ -295,10 +333,16 @@ exports.submitPublicResponse = asyncHandler(async (req, res) => {
     sentiment: response.sentiment,
     npsScore: response.npsScore,
     hasVoiceFeedback: Boolean(response.voiceFeedback?.fileName),
+    hasVideoFeedback: Boolean(response.videoFeedback?.fileName),
     submittedAt: response.submittedAt,
   });
 
-  res.status(201).json({ success: true, message: 'Thank you for your feedback!', responseId: response._id });
+  res.status(201).json({
+    success: true,
+    message: 'Thank you for your feedback!',
+    responseId: response._id,
+    mediaWarnings,
+  });
 });
 
 // Lightweight rule-based sentiment tagger over open-text answers — no external
@@ -341,47 +385,53 @@ exports.listResponses = asyncHandler(async (req, res) => {
   res.json({ success: true, form, responses });
 });
 
-exports.getVoiceFeedback = asyncHandler(async (req, res) => {
+async function streamFeedbackRecording(req, res, kind) {
   const form = await findOrganizerForm(req.params.id, req.user);
   if (!form) throw new ApiError(404, 'Form not found.');
-  const response = await Response.findOne({ _id: req.params.responseId, form: form._id }).select('voiceFeedback');
-  if (!response?.voiceFeedback?.fileName) throw new ApiError(404, 'This response has no voice recording.');
-  if (!/^[\da-f-]{36}\.(webm|ogg|m4a|mp3|wav)$/i.test(response.voiceFeedback.fileName)) {
-    throw new ApiError(500, 'Stored voice recording reference is invalid.');
+  const { field, extensions } = FEEDBACK_RECORDING_TYPES[kind];
+  const response = await Response.findOne({ _id: req.params.responseId, form: form._id }).select(field);
+  const recording = response?.[field];
+  if (!recording?.fileName) throw new ApiError(404, `This response has no ${kind} recording.`);
+  const validExtensions = Object.values(extensions).map((extension) => extension.slice(1)).join('|');
+  if (!new RegExp(`^[\\da-f-]{36}\\.(${validExtensions})$`, 'i').test(recording.fileName)) {
+    throw new ApiError(500, `Stored ${kind} recording reference is invalid.`);
   }
 
   res.set({
-    'Content-Type': response.voiceFeedback.mimeType,
-    'Content-Disposition': `inline; filename="${response.voiceFeedback.fileName}"`,
+    'Content-Type': recording.mimeType,
+    'Content-Disposition': `inline; filename="${recording.fileName}"`,
     'Cache-Control': 'private, no-store',
     'X-Content-Type-Options': 'nosniff',
   });
   if (objectStorage.isConfigured()) {
     try {
-      const audio = await objectStorage.downloadObject({
+      const buffer = await objectStorage.downloadObject({
         bucket: VOICE_FEEDBACK_BUCKET,
-        objectPath: response.voiceFeedback.fileName,
+        objectPath: recording.fileName,
       });
-      return res.send(audio);
+      return res.send(buffer);
     } catch (err) {
-      console.error('[feedback] Stored voice recording is unavailable:', err.message);
-      throw new ApiError(500, 'The stored voice recording is currently unavailable.');
+      console.error(`[feedback] Stored ${kind} recording is unavailable:`, err.message);
+      throw new ApiError(500, `The stored ${kind} recording is currently unavailable.`);
     }
   }
 
-  const filePath = path.join(VOICE_FEEDBACK_DIR, response.voiceFeedback.fileName);
+  const filePath = path.join(VOICE_FEEDBACK_DIR, recording.fileName);
   try {
     await fs.promises.access(filePath, fs.constants.R_OK);
   } catch (err) {
-    console.error('[feedback] Stored voice recording is unavailable:', err.message);
-    throw new ApiError(500, 'The stored voice recording is currently unavailable.');
+    console.error(`[feedback] Stored ${kind} recording is unavailable:`, err.message);
+    throw new ApiError(500, `The stored ${kind} recording is currently unavailable.`);
   }
   fs.createReadStream(filePath).on('error', (err) => {
-    console.error('[feedback] Could not stream stored voice recording:', err.message);
+    console.error(`[feedback] Could not stream stored ${kind} recording:`, err.message);
     if (res.headersSent) res.destroy(err);
-    else res.status(500).json({ success: false, message: 'Could not read the stored voice recording.' });
+    else res.status(500).json({ success: false, message: `Could not read the stored ${kind} recording.` });
   }).pipe(res);
-});
+}
+
+exports.getVoiceFeedback = asyncHandler((req, res) => streamFeedbackRecording(req, res, 'voice'));
+exports.getVideoFeedback = asyncHandler((req, res) => streamFeedbackRecording(req, res, 'video'));
 
 // @route GET /api/forms/:id/responses/export?format=xlsx|csv|json
 exports.exportResponsesExcel = asyncHandler(async (req, res) => {
@@ -406,6 +456,7 @@ exports.exportResponsesExcel = asyncHandler(async (req, res) => {
       Phone: r.academicInfo?.phone || '',
       Email: r.academicInfo?.email || '',
       'Voice Recording': r.voiceFeedback?.fileName ? 'Stored' : 'Not provided',
+      'Video Recording': r.videoFeedback?.fileName ? 'Stored' : 'Not provided',
       Sentiment: r.sentiment || '',
       'Submitted At': new Date(r.submittedAt).toLocaleString(),
     };
@@ -436,6 +487,7 @@ exports.exportResponsesExcel = asyncHandler(async (req, res) => {
       'Phone',
       'Email',
       'Voice Recording',
+      'Video Recording',
       'Sentiment',
       'Submitted At',
     ];
