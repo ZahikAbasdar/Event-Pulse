@@ -27,8 +27,53 @@ const spreadsheetUpload = multer({
   },
 });
 
-const ALLOWED_AUDIO = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/x-wav'];
-const ALLOWED_FEEDBACK_VIDEO = ['video/webm', 'video/mp4', 'video/quicktime'];
+const AUDIO_MIME_BY_EXTENSION = {
+  '.aac': 'audio/aac',
+  '.aif': 'audio/aiff',
+  '.aiff': 'audio/aiff',
+  '.amr': 'audio/amr',
+  '.caf': 'audio/x-caf',
+  '.flac': 'audio/flac',
+  '.3gp': 'audio/3gpp',
+  '.3gpp': 'audio/3gpp',
+  '.m4a': 'audio/mp4',
+  '.midi': 'audio/midi',
+  '.mid': 'audio/midi',
+  '.mp3': 'audio/mpeg',
+  '.mpa': 'audio/mpeg',
+  '.oga': 'audio/ogg',
+  '.ogg': 'audio/ogg',
+  '.opus': 'audio/ogg',
+  '.wav': 'audio/wav',
+  '.weba': 'audio/webm',
+  '.wma': 'audio/x-ms-wma',
+};
+const VIDEO_MIME_BY_EXTENSION = {
+  '.asf': 'video/x-ms-asf',
+  '.3g2': 'video/3gpp2',
+  '.3gp': 'video/3gpp',
+  '.3gpp': 'video/3gpp',
+  '.avi': 'video/x-msvideo',
+  '.divx': 'video/divx',
+  '.f4v': 'video/x-f4v',
+  '.flv': 'video/x-flv',
+  '.m2ts': 'video/mp2t',
+  '.m4v': 'video/x-m4v',
+  '.mkv': 'video/x-matroska',
+  '.mxf': 'video/mxf',
+  '.mov': 'video/quicktime',
+  '.mp4': 'video/mp4',
+  '.mpe': 'video/mpeg',
+  '.mpeg': 'video/mpeg',
+  '.mpg': 'video/mpeg',
+  '.mts': 'video/mp2t',
+  '.ogv': 'video/ogg',
+  '.qt': 'video/quicktime',
+  '.ts': 'video/mp2t',
+  '.vob': 'video/dvd',
+  '.webm': 'video/webm',
+  '.wmv': 'video/x-ms-wmv',
+};
 const voiceFeedbackMaxBytes = (Number(process.env.MAX_VOICE_FEEDBACK_MB) || 25) * 1024 * 1024;
 const mediaUpload = multer({
   storage: multer.memoryStorage(),
@@ -44,14 +89,32 @@ const voiceFeedbackUpload = multer({
   limits: { fileSize: voiceFeedbackMaxBytes, files: 2 },
   fileFilter: (req, file, cb) => {
     const mimeType = file.mimetype.split(';')[0].toLowerCase();
-    if (file.fieldname === 'voiceFeedback' && !ALLOWED_AUDIO.includes(mimeType)) {
-      return cb(new Error('Voice feedback must be a WebM, Ogg, MP4, MP3, or WAV audio file.'));
-    }
-    if (file.fieldname === 'videoFeedback' && !ALLOWED_FEEDBACK_VIDEO.includes(mimeType)) {
-      return cb(new Error('Video feedback must be a WebM, MP4, or QuickTime video file.'));
+    const extension = path.extname(file.originalname).toLowerCase();
+    const family = file.fieldname === 'voiceFeedback' ? 'audio' : file.fieldname === 'videoFeedback' ? 'video' : null;
+    const extensionTypes = family === 'audio' ? AUDIO_MIME_BY_EXTENSION : VIDEO_MIME_BY_EXTENSION;
+    if (!family) return cb(new Error('Unexpected feedback upload field.'));
+
+    if (mimeType === 'application/octet-stream' || !mimeType) {
+      if (!extensionTypes[extension]) {
+        const error = new Error(`Choose a recognized ${family} recording file.`);
+        error.code = 'UNSUPPORTED_FEEDBACK_MEDIA';
+        return cb(error);
+      }
+      file.mimetype = extensionTypes[extension];
+    } else if (!mimeType.startsWith(`${family}/`)) {
+      const error = new Error(`Choose an ${family} recording file for this field.`);
+      error.code = 'UNSUPPORTED_FEEDBACK_MEDIA';
+      return cb(error);
     }
     cb(null, true);
   },
 });
 
-module.exports = { mediaUpload, spreadsheetUpload, voiceFeedbackUpload, UPLOAD_DIR };
+module.exports = {
+  mediaUpload,
+  spreadsheetUpload,
+  voiceFeedbackUpload,
+  UPLOAD_DIR,
+  AUDIO_MIME_BY_EXTENSION,
+  VIDEO_MIME_BY_EXTENSION,
+};

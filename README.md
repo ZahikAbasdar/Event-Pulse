@@ -118,6 +118,7 @@ an organizer has uploaded an authorized event photograph.*
 - Participants can self-register; privileged staff roles must be invited or promoted by an admin.
 - The Developer profile links to admin access registration with only username, `.edu`/`.edu.in` email, and password. New accounts remain regular accounts until a super admin reviews and approves the request; verify applicants through a trusted institutional channel because an email suffix alone does not grant privileges.
 - To non-destructively provision or rotate the configured PCTE super-admin account, set `SUPER_ADMIN_NAME`, `SUPER_ADMIN_EMAIL`, and `SUPER_ADMIN_PASSWORD` in `backend/.env`, then run `npm run provision:super-admin --prefix backend`. This command updates only the matching account and does not run the destructive seed.
+- Public feedback accepts optional recorded or selected audio/video files in common phone and desktop formats, with a 25 MB per-file limit by default (`MAX_VOICE_FEEDBACK_MB`). If an optional recording is invalid, too large, or storage is unavailable, written feedback is still submitted and the user receives a warning. Browsers require a secure page and the user's explicit camera/microphone permission for recording; unsupported playback codecs can be downloaded in their original format by organizers.
 - Role- and organization-protected API routes and dashboard pages.
 
 </details>

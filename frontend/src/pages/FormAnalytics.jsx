@@ -270,7 +270,16 @@ export default function FormAnalytics() {
                         <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(response.submittedAt).toLocaleString()}</p>
                       </div>
                       {voiceUrls[response._id] ? (
-                        <audio controls src={voiceUrls[response._id]} className="max-w-full" aria-label={`Voice feedback by ${response.academicInfo?.name || 'participant'}`} />
+                        <div className="flex max-w-full flex-wrap items-center gap-3">
+                          <audio controls src={voiceUrls[response._id]} className="max-w-full" aria-label={`Voice feedback by ${response.academicInfo?.name || 'participant'}`} />
+                          <a
+                            href={voiceUrls[response._id]}
+                            download={response.voiceFeedback.originalName || response.voiceFeedback.fileName}
+                            className="btn-secondary !py-2 text-xs"
+                          >
+                            <Download size={13} /> Download original
+                          </a>
+                        </div>
                       ) : (
                         <button type="button" onClick={() => loadVoiceRecording(response._id)} className="btn-secondary !py-2 text-xs">
                           Load voice recording
@@ -302,7 +311,16 @@ export default function FormAnalytics() {
                         <span className="ml-2 text-xs font-normal text-gray-500">{new Date(response.submittedAt).toLocaleString()}</span>
                       </p>
                       {videoUrls[response._id] ? (
-                        <video controls playsInline src={videoUrls[response._id]} className="max-h-96 w-full rounded-xl bg-black" aria-label={`Video feedback by ${response.academicInfo?.name || 'participant'}`} />
+                        <div className="space-y-2">
+                          <video controls playsInline src={videoUrls[response._id]} className="max-h-96 w-full rounded-xl bg-black" aria-label={`Video feedback by ${response.academicInfo?.name || 'participant'}`} />
+                          <a
+                            href={videoUrls[response._id]}
+                            download={response.videoFeedback.originalName || response.videoFeedback.fileName}
+                            className="btn-secondary inline-flex !py-2 text-xs"
+                          >
+                            <Download size={13} /> Download original
+                          </a>
+                        </div>
                       ) : (
                         <button type="button" onClick={() => loadVideoRecording(response._id)} className="btn-secondary !py-2 text-xs">
                           Load video recording

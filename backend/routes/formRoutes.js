@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const rateLimit = require('express-rate-limit');
 const ctrl = require('../controllers/formController');
 const { protect, authorize } = require('../middleware/auth');
@@ -12,6 +13,29 @@ const feedbackSubmitLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+const optionalFeedbackUpload = voiceFeedbackUpload.fields([
+  { name: 'voiceFeedback', maxCount: 1 },
+  { name: 'videoFeedback', maxCount: 1 },
+]);
+
+function acceptFeedbackWithoutInvalidOptionalMedia(req, res, next) {
+  optionalFeedbackUpload(req, res, (err) => {
+    if (!err) return next();
+
+    if ((err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE')
+      || err.code === 'UNSUPPORTED_FEEDBACK_MEDIA') {
+      req.files = {};
+      req.mediaUploadWarnings = [
+        err.code === 'LIMIT_FILE_SIZE'
+          ? `Your written feedback was accepted, but an optional recording exceeded the ${Number(process.env.MAX_VOICE_FEEDBACK_MB) || 25} MB per-file limit. Submit without it or choose a smaller file.`
+          : 'Your written feedback was accepted, but an optional recording format or file type was not supported.',
+      ];
+      return next();
+    }
+
+    return next(err);
+  });
+}
 
 // Organizer-only builder routes
 router.post('/event-feedback/ensure', protect, authorize('super_admin', 'org_admin', 'event_manager'), ctrl.ensureEventFeedbackForms);
@@ -29,10 +53,7 @@ router.get('/share/:shareSlug', ctrl.getPublicForm);
 router.post(
   '/share/:shareSlug/responses',
   feedbackSubmitLimiter,
-  voiceFeedbackUpload.fields([
-    { name: 'voiceFeedback', maxCount: 1 },
-    { name: 'videoFeedback', maxCount: 1 },
-  ]),
+  acceptFeedbackWithoutInvalidOptionalMedia,
   ctrl.submitPublicResponse
 );
 

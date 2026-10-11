@@ -5,6 +5,24 @@ import { Star, Send, CheckCircle2, Mic, Square, Video } from 'lucide-react';
 import api from '../api/client';
 
 const BLOCKS = ['ET', 'MT', 'T Pharmacy', 'HM'];
+const MAX_RECORDING_BYTES = 25 * 1024 * 1024;
+
+function recordingFilename(blob, kind) {
+  if (typeof File !== 'undefined' && blob instanceof File && blob.name) return blob.name;
+  const mimeType = blob.type.split(';')[0].toLowerCase();
+  const knownExtensions = {
+    'audio/mp4': '.m4a',
+    'audio/mpeg': '.mp3',
+    'audio/ogg': '.ogg',
+    'audio/wav': '.wav',
+    'audio/webm': '.webm',
+    'video/mp4': '.mp4',
+    'video/quicktime': '.mov',
+    'video/webm': '.webm',
+  };
+  const extension = knownExtensions[mimeType] || `.${mimeType.split('/')[1]?.replace(/^x-/, '').replace(/[^a-z0-9]/g, '') || 'bin'}`;
+  return `${kind}-feedback${extension}`;
+}
 
 export default function PublicFeedbackForm() {
   const { shareSlug } = useParams();
@@ -32,6 +50,8 @@ export default function PublicFeedbackForm() {
   const videoStreamRef = useRef(null);
   const chunksRef = useRef([]);
   const videoChunksRef = useRef([]);
+  const voiceBytesRef = useRef(0);
+  const videoBytesRef = useRef(0);
 
   const setField = (field) => (event) => setAcademicInfo((current) => ({ ...current, [field]: event.target.value }));
 
@@ -70,8 +90,8 @@ export default function PublicFeedbackForm() {
       payload.append('voiceConsent', String(voiceConsent));
       payload.append('videoConsent', String(videoConsent));
       if (ticketCode) payload.append('ticketCode', ticketCode);
-      if (voiceBlob && voiceConsent) payload.append('voiceFeedback', voiceBlob, `voice-feedback.${voiceBlob.type.includes('mp4') ? 'm4a' : voiceBlob.type.includes('ogg') ? 'ogg' : 'webm'}`);
-      if (videoBlob && videoConsent) payload.append('videoFeedback', videoBlob, `video-feedback.${videoBlob.type.includes('mp4') ? 'mp4' : videoBlob.type.includes('quicktime') ? 'mov' : 'webm'}`);
+      if (voiceBlob && voiceConsent) payload.append('voiceFeedback', voiceBlob, recordingFilename(voiceBlob, 'voice'));
+      if (videoBlob && videoConsent) payload.append('videoFeedback', videoBlob, recordingFilename(videoBlob, 'video'));
 
       const { data } = await api.post(`/forms/share/${shareSlug}/responses`, payload);
       data.mediaWarnings?.forEach((warning) => toast.error(warning));
@@ -100,23 +120,27 @@ export default function PublicFeedbackForm() {
         .find((type) => MediaRecorder.isTypeSupported(type));
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       chunksRef.current = [];
+      voiceBytesRef.current = 0;
       recorder.ondataavailable = (event) => {
-        if (event.data.size) chunksRef.current.push(event.data);
+        if (!event.data.size) return;
+        voiceBytesRef.current += event.data.size;
+        chunksRef.current.push(event.data);
+        if (voiceBytesRef.current > MAX_RECORDING_BYTES && recorder.state === 'recording') recorder.stop();
       };
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
         stream.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
         setRecording(false);
-        if (blob.size > 25 * 1024 * 1024) {
-          toast.error('Recording exceeds the 25 MB upload limit. Record a shorter message.');
+        if (blob.size > MAX_RECORDING_BYTES) {
+          toast.error('Voice recording exceeds the 25 MB per-file limit. Shorten it or choose an existing audio file.');
           return;
         }
         setVoiceBlob(blob);
         setVoiceUrl(URL.createObjectURL(blob));
       };
       recorderRef.current = recorder;
-      recorder.start();
+      recorder.start(1000);
       setRecording(true);
     } catch (err) {
       toast.error(err.name === 'NotAllowedError' ? 'Allow microphone access to record voice feedback.' : 'Could not start voice recording.');
@@ -140,29 +164,33 @@ export default function PublicFeedbackForm() {
       if (videoUrl) URL.revokeObjectURL(videoUrl);
       setVideoUrl('');
       setVideoBlob(null);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { facingMode: 'user' } });
       videoStreamRef.current = stream;
       const mimeType = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/mp4']
         .find((type) => MediaRecorder.isTypeSupported(type));
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       videoChunksRef.current = [];
+      videoBytesRef.current = 0;
       recorder.ondataavailable = (event) => {
-        if (event.data.size) videoChunksRef.current.push(event.data);
+        if (!event.data.size) return;
+        videoBytesRef.current += event.data.size;
+        videoChunksRef.current.push(event.data);
+        if (videoBytesRef.current > MAX_RECORDING_BYTES && recorder.state === 'recording') recorder.stop();
       };
       recorder.onstop = () => {
         const blob = new Blob(videoChunksRef.current, { type: recorder.mimeType || 'video/webm' });
         stream.getTracks().forEach((track) => track.stop());
         videoStreamRef.current = null;
         setVideoRecording(false);
-        if (blob.size > 25 * 1024 * 1024) {
-          toast.error('Video exceeds the 25 MB upload limit. Record a shorter clip.');
+        if (blob.size > MAX_RECORDING_BYTES) {
+          toast.error('Video recording exceeds the 25 MB per-file limit. Shorten it or choose an existing video.');
           return;
         }
         setVideoBlob(blob);
         setVideoUrl(URL.createObjectURL(blob));
       };
       videoRecorderRef.current = recorder;
-      recorder.start();
+      recorder.start(1000);
       setVideoRecording(true);
     } catch (err) {
       videoStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -175,11 +203,38 @@ export default function PublicFeedbackForm() {
     if (videoRecorderRef.current?.state === 'recording') videoRecorderRef.current.stop();
   };
 
+  const selectVoice = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const supportedExtension = ['3gp', '3gpp', 'aac', 'aif', 'aiff', 'amr', 'caf', 'flac', 'm4a', 'mid', 'midi', 'mp3', 'mpa', 'oga', 'ogg', 'opus', 'wav', 'weba', 'wma'].includes(extension);
+    if (!file.type.startsWith('audio/') && !supportedExtension) {
+      toast.error('Choose an audio file. You can still submit your written feedback without a recording.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > MAX_RECORDING_BYTES) {
+      toast.error('Audio file exceeds the 25 MB per-file limit. Choose a smaller file or submit without it.');
+      event.target.value = '';
+      return;
+    }
+    if (voiceUrl) URL.revokeObjectURL(voiceUrl);
+    setVoiceBlob(file);
+    setVoiceUrl(URL.createObjectURL(file));
+  };
+
   const selectVideo = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (file.size > 25 * 1024 * 1024) {
-      toast.error('Video exceeds the 25 MB upload limit. Choose a smaller clip.');
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const supportedExtension = ['3g2', '3gp', '3gpp', 'asf', 'avi', 'divx', 'f4v', 'flv', 'm2ts', 'm4v', 'mkv', 'mov', 'mp4', 'mpe', 'mpeg', 'mpg', 'mts', 'mxf', 'ogv', 'qt', 'ts', 'vob', 'webm', 'wmv'].includes(extension);
+    if (!file.type.startsWith('video/') && !supportedExtension) {
+      toast.error('Choose a video file. You can still submit your written feedback without a recording.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > MAX_RECORDING_BYTES) {
+      toast.error('Video file exceeds the 25 MB per-file limit. Choose a smaller file or submit without it.');
       event.target.value = '';
       return;
     }
@@ -273,7 +328,7 @@ export default function PublicFeedbackForm() {
         <fieldset className="space-y-3 border-t border-gray-100 pt-5 dark:border-gray-800">
           <legend className="text-sm font-semibold text-gray-900 dark:text-white">Voice feedback (optional)</legend>
           <p className="text-xs leading-5 text-gray-500 dark:text-gray-400">
-            If you submit a recording, it is stored privately with your response and retained permanently for event analysis. Only authorized event administrators can access it.
+            Record on your device or choose an audio file. Common phone and desktop formats are accepted up to 25 MB per file. Recording is optional; written feedback can be submitted without it. Your browser/device asks permission before recording.
           </p>
           <label className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
             <input type="checkbox" checked={voiceConsent} onChange={(event) => setVoiceConsent(event.target.checked)} />
@@ -290,6 +345,10 @@ export default function PublicFeedbackForm() {
               </button>
             )}
             {recording && <span role="status" className="self-center text-xs font-semibold text-red-600">Recording…</span>}
+            <label className="btn-secondary !py-2 text-xs">
+              Choose an audio file
+              <input type="file" accept="audio/*,.3gp,.3gpp,.aac,.aif,.aiff,.amr,.caf,.flac,.m4a,.mid,.midi,.mp3,.mpa,.oga,.ogg,.opus,.wav,.weba,.wma" className="sr-only" onChange={selectVoice} disabled={!voiceConsent || submitting || recording} />
+            </label>
           </div>
           {voiceUrl && <audio controls src={voiceUrl} className="w-full" aria-label="Preview voice feedback recording" />}
         </fieldset>
@@ -314,8 +373,8 @@ export default function PublicFeedbackForm() {
               </button>
             )}
             <label className="btn-secondary !py-2 text-xs">
-              Choose a video
-              <input type="file" accept="video/webm,video/mp4,video/quicktime" className="sr-only" onChange={selectVideo} disabled={submitting || videoRecording} />
+              Choose a video file
+              <input type="file" accept="video/*,.3g2,.3gp,.3gpp,.asf,.avi,.divx,.f4v,.flv,.m2ts,.m4v,.mkv,.mov,.mp4,.mpe,.mpeg,.mpg,.mts,.mxf,.ogv,.qt,.ts,.vob,.webm,.wmv" className="sr-only" onChange={selectVideo} disabled={!videoConsent || submitting || videoRecording} />
             </label>
             {videoRecording && <span role="status" className="text-xs font-semibold text-red-600">Recording…</span>}
           </div>

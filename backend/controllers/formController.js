@@ -14,29 +14,13 @@ const { getIO } = require('../utils/socket');
 const objectStorage = require('../utils/objectStorage');
 const getPublicBaseUrl = require('../utils/publicUrl');
 const ensureEventFeedbackForm = require('../utils/ensureEventFeedbackForm');
+const { AUDIO_MIME_BY_EXTENSION, VIDEO_MIME_BY_EXTENSION } = require('../middleware/upload');
 
 const VOICE_FEEDBACK_DIR = path.resolve(__dirname, '..', process.env.VOICE_FEEDBACK_DIR || 'private/feedback-audio');
 const VOICE_FEEDBACK_BUCKET = process.env.SUPABASE_VOICE_BUCKET || 'eventpulse-voice';
 const FEEDBACK_RECORDING_TYPES = {
-  voice: {
-    field: 'voiceFeedback',
-    extensions: {
-      'audio/webm': '.webm',
-      'audio/ogg': '.ogg',
-      'audio/mp4': '.m4a',
-      'audio/mpeg': '.mp3',
-      'audio/wav': '.wav',
-      'audio/x-wav': '.wav',
-    },
-  },
-  video: {
-    field: 'videoFeedback',
-    extensions: {
-      'video/webm': '.webm',
-      'video/mp4': '.mp4',
-      'video/quicktime': '.mov',
-    },
-  },
+  voice: { field: 'voiceFeedback', mediaType: 'audio', extensions: AUDIO_MIME_BY_EXTENSION },
+  video: { field: 'videoFeedback', mediaType: 'video', extensions: VIDEO_MIME_BY_EXTENSION },
 };
 const ACADEMIC_QUESTIONS = [
   { text: 'Name', type: 'academic_identifier', academicField: 'name', required: true },
@@ -52,10 +36,20 @@ function withAcademicQuestions(questions, requiresAcademicId) {
 }
 
 async function storeFeedbackRecording(file, kind) {
-  const { extensions } = FEEDBACK_RECORDING_TYPES[kind];
+  const { mediaType, extensions } = FEEDBACK_RECORDING_TYPES[kind];
   const mimeType = file.mimetype.split(';')[0].toLowerCase();
-  const extension = extensions[mimeType];
-  if (!extension) throw new ApiError(400, `Unsupported ${kind} feedback recording format.`);
+  if (!mimeType.startsWith(`${mediaType}/`)) {
+    throw new ApiError(400, `Choose an ${mediaType} file for ${kind} feedback.`);
+  }
+  const originalName = path.basename(file.originalname).slice(0, 120);
+  let extension = path.extname(originalName).toLowerCase();
+  if (!/^\.[a-z0-9]{1,10}$/.test(extension)) {
+    extension = Object.entries(extensions).find(([, supportedType]) => supportedType === mimeType)?.[0];
+  }
+  if (!extension) {
+    const subtype = mimeType.split('/')[1].split(';')[0].replace(/^x-/, '').replace(/[^a-z0-9.+-]/g, '');
+    extension = subtype && subtype.length <= 10 ? `.${subtype}` : '.bin';
+  }
 
   const fileName = `${crypto.randomUUID()}${extension}`;
   if (objectStorage.isConfigured()) {
@@ -73,7 +67,7 @@ async function storeFeedbackRecording(file, kind) {
   return {
     fileName,
     mimeType,
-    originalName: path.basename(file.originalname).slice(0, 120),
+    originalName,
     sizeBytes: file.size,
   };
 }
@@ -282,7 +276,7 @@ exports.submitPublicResponse = asyncHandler(async (req, res) => {
       return { question: question._id, questionText: question.text, value: answer.value };
     });
 
-  const mediaWarnings = [];
+  const mediaWarnings = [...(req.mediaUploadWarnings || [])];
   const uploadedFiles = {
     voice: req.body.voiceConsent === 'true' ? req.files?.voiceFeedback?.[0] : undefined,
     video: req.body.videoConsent === 'true' ? req.files?.videoFeedback?.[0] : undefined,
@@ -388,12 +382,12 @@ exports.listResponses = asyncHandler(async (req, res) => {
 async function streamFeedbackRecording(req, res, kind) {
   const form = await findOrganizerForm(req.params.id, req.user);
   if (!form) throw new ApiError(404, 'Form not found.');
-  const { field, extensions } = FEEDBACK_RECORDING_TYPES[kind];
+  const { field, mediaType } = FEEDBACK_RECORDING_TYPES[kind];
   const response = await Response.findOne({ _id: req.params.responseId, form: form._id }).select(field);
   const recording = response?.[field];
   if (!recording?.fileName) throw new ApiError(404, `This response has no ${kind} recording.`);
-  const validExtensions = Object.values(extensions).map((extension) => extension.slice(1)).join('|');
-  if (!new RegExp(`^[\\da-f-]{36}\\.(${validExtensions})$`, 'i').test(recording.fileName)) {
+  if (!new RegExp('^[\\da-f-]{36}\\.[a-z0-9]{1,10}$', 'i').test(recording.fileName)
+    || !new RegExp(`^${mediaType}/[a-z0-9!#$&^_.+-]+$`, 'i').test(recording.mimeType || '')) {
     throw new ApiError(500, `Stored ${kind} recording reference is invalid.`);
   }
 
