@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ImageIcon } from 'lucide-react';
+import { ExternalLink, ImageIcon, Instagram } from 'lucide-react';
 import api from '../api/client';
 
 export default function Gallery() {
@@ -48,33 +48,30 @@ export default function Gallery() {
           <div className="mb-4">
             <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white">Jasmine Sandlas — Instagram carousel</h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Each of the 20 items is shown in its own card, loaded directly from Instagram.
-              If an item does not load,{' '}
-              <a
-                href="https://www.instagram.com/p/DeTwGLXk4VR/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-maroon-600 underline dark:text-gold-400"
-              >
-                open the original post
-              </a>.
+              Open each item in the original Instagram carousel. Instagram hosts the photos and controls their display.
             </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
             {instagramCarouselItems.map((itemNumber) => (
-              <article key={itemNumber} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
-                <h3 className="px-4 py-3 text-sm font-semibold text-gray-800 dark:text-gray-200">
-                  Item {itemNumber} of {instagramCarouselItems.length}
-                </h3>
-                <iframe
-                  title={`Instagram carousel item ${itemNumber} of ${instagramCarouselItems.length}`}
-                  src={`https://www.instagram.com/p/DeTwGLXk4VR/embed/?img_index=${itemNumber}`}
-                  className="h-[720px] w-full border-0"
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  allowFullScreen
-                />
-              </article>
+              <a
+                key={itemNumber}
+                href={`https://www.instagram.com/p/DeTwGLXk4VR/?img_index=${itemNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Open Instagram carousel item ${itemNumber} of ${instagramCarouselItems.length}`}
+                className="group flex min-h-40 items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-maroon-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-950 dark:hover:border-gold-700"
+              >
+                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-purple-600 via-pink-500 to-amber-400 text-white">
+                  <Instagram size={26} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-display text-lg font-bold text-gray-900 group-hover:text-maroon-700 dark:text-white dark:group-hover:text-gold-300">
+                    Item {itemNumber} of {instagramCarouselItems.length}
+                  </span>
+                  <span className="mt-1 block text-sm text-gray-500 dark:text-gray-400">View this item on Instagram</span>
+                </span>
+                <ExternalLink size={18} className="shrink-0 text-gray-400 group-hover:text-maroon-600 dark:group-hover:text-gold-300" />
+              </a>
             ))}
           </div>
         </section>
