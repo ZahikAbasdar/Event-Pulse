@@ -116,6 +116,8 @@ an organizer has uploaded an authorized event photograph.*
 - Forgot-password links are sent to the account email and expire after 30
   minutes. Configure SMTP to enable password recovery.
 - Participants can self-register; privileged staff roles must be invited or promoted by an admin.
+- The Developer profile links to admin access registration with only username, `.edu`/`.edu.in` email, and password. New accounts remain regular accounts until a super admin reviews and approves the request; verify applicants through a trusted institutional channel because an email suffix alone does not grant privileges.
+- To non-destructively provision or rotate the configured PCTE super-admin account, set `SUPER_ADMIN_NAME`, `SUPER_ADMIN_EMAIL`, and `SUPER_ADMIN_PASSWORD` in `backend/.env`, then run `npm run provision:super-admin --prefix backend`. This command updates only the matching account and does not run the destructive seed.
 - Role- and organization-protected API routes and dashboard pages.
 
 </details>

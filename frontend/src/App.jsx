@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import PasswordRecovery from './pages/PasswordRecovery';
+import AdminAccessRequest from './pages/AdminAccessRequest';
 import Register from './pages/Register';
 import EventsList from './pages/EventsList';
 import EventDetail from './pages/EventDetail';
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<PasswordRecovery />} />
         <Route path="/reset-password" element={<PasswordRecovery />} />
+        <Route path="/admin-access" element={<AdminAccessRequest />} />
         <Route path="/register" element={<Register />} />
         <Route path="/events" element={<EventsList />} />
         <Route path="/events/:slug" element={<EventDetail />} />

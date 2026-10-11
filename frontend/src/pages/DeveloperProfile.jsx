@@ -9,6 +9,7 @@ import {
   Mail,
   PenLine,
   Phone,
+  ShieldCheck,
   Sparkles,
   Trophy,
 } from 'lucide-react';
@@ -111,6 +112,9 @@ export default function DeveloperProfile() {
               </a>
               <a href="mailto:Zahik@pcte.edu.in" className="btn-secondary !px-5 !py-3">
                 <Mail size={17} /> Get in touch
+              </a>
+              <a href="/admin-access" className="btn-secondary !px-5 !py-3">
+                <ShieldCheck size={17} /> Request admin access
               </a>
             </div>
 
