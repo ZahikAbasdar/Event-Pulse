@@ -13,6 +13,13 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Too many password recovery attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 router.post(
   '/register',
   authLimiter,
@@ -29,6 +36,17 @@ router.post(
   authLimiter,
   [body('email').isEmail().withMessage('A valid email is required'), body('password').notEmpty().withMessage('Password is required')],
   ctrl.login
+);
+
+router.post('/forgot-password', passwordResetLimiter, [body('email').isEmail().withMessage('A valid email is required')], ctrl.requestPasswordReset);
+router.post(
+  '/reset-password',
+  passwordResetLimiter,
+  [
+    body('token').isHexadecimal().isLength({ min: 64, max: 64 }).withMessage('A valid reset token is required'),
+    body('newPassword').isLength({ min: 12 }).withMessage('New password must be at least 12 characters'),
+  ],
+  ctrl.resetPassword
 );
 
 router.post('/logout', ctrl.logout);

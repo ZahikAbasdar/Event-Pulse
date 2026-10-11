@@ -69,6 +69,12 @@ export default function Login() {
             />
           </div>
 
+          <div className="-mt-2 text-right">
+            <Link to="/forgot-password" className="text-xs font-semibold text-gold-300 hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+
           <button type="submit" disabled={loading} className="btn-gold w-full !py-3">
             <Sparkles size={16} /> {loading ? 'Signing in...' : 'Sign in'}
           </button>

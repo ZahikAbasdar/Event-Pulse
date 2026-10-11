@@ -113,6 +113,8 @@ an organizer has uploaded an authorized event photograph.*
 <summary><strong>Email/password sign-in & roles</strong></summary>
 
 - Participants and staff sign in with their email and password.
+- Forgot-password links are sent to the account email and expire after 30
+  minutes. Configure SMTP to enable password recovery.
 - Participants can self-register; privileged staff roles must be invited or promoted by an admin.
 - Role- and organization-protected API routes and dashboard pages.
 
@@ -340,6 +342,7 @@ policy for participant information.
 | YouTube channel video listings | None | The latest public uploads are read from PCTE's official YouTube feed. |
 | AI-assisted tools | `AI_PROVIDER_API_KEY`, optional `AI_PROVIDER_BASE_URL` | Provider-backed AI answers are unavailable. |
 | Certificate email delivery | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_PORT`/`SMTP_FROM` | Generated certificates remain downloadable but are not emailed. |
+| Password recovery emails | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_PORT`/`SMTP_FROM` | Configure SMTP and a sender address accepted by the provider; email-based password reset is unavailable until then. |
 | Persistent media/audio/video storage | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, optional bucket names | Local development falls back to local disk; production refuses to start without remote storage. Confirm the Supabase project is active, the URL is correct, both buckets exist, and credentials have upload/read access. |
 | Public/proxied deployment | `CLIENT_URL` (optional) | Render's service URL is detected automatically; set this only for a custom domain/proxy. |
 

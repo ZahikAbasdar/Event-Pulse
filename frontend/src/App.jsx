@@ -5,6 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
+import PasswordRecovery from './pages/PasswordRecovery';
 import Register from './pages/Register';
 import EventsList from './pages/EventsList';
 import EventDetail from './pages/EventDetail';
@@ -34,6 +35,8 @@ export default function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<PasswordRecovery />} />
+        <Route path="/reset-password" element={<PasswordRecovery />} />
         <Route path="/register" element={<Register />} />
         <Route path="/events" element={<EventsList />} />
         <Route path="/events/:slug" element={<EventDetail />} />
