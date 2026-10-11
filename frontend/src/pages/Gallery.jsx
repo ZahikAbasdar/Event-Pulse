@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ExternalLink, ImageIcon, Instagram } from 'lucide-react';
+import { ImageIcon, Instagram } from 'lucide-react';
 import api from '../api/client';
 
 export default function Gallery() {
@@ -48,31 +48,21 @@ export default function Gallery() {
           <div className="mb-4">
             <h2 className="font-display text-lg font-bold text-gray-900 dark:text-white">Jasmine Sandlas — Instagram carousel</h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Open each item in the original Instagram carousel. Instagram hosts the photos and controls their display.
+              Browse the photos and videos here using the carousel controls. The media is embedded from Instagram.
             </p>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 2xl:grid-cols-3">
-            {instagramCarouselItems.map((itemNumber) => (
-              <a
-                key={itemNumber}
-                href={`https://www.instagram.com/p/DeTwGLXk4VR/?img_index=${itemNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Open Instagram carousel item ${itemNumber} of ${instagramCarouselItems.length}`}
-                className="group flex min-h-40 items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-maroon-300 hover:shadow-md dark:border-gray-800 dark:bg-gray-950 dark:hover:border-gold-700"
-              >
-                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-purple-600 via-pink-500 to-amber-400 text-white">
-                  <Instagram size={26} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-display text-lg font-bold text-gray-900 group-hover:text-maroon-700 dark:text-white dark:group-hover:text-gold-300">
-                    Item {itemNumber} of {instagramCarouselItems.length}
-                  </span>
-                  <span className="mt-1 block text-sm text-gray-500 dark:text-gray-400">View this item on Instagram</span>
-                </span>
-                <ExternalLink size={18} className="shrink-0 text-gray-400 group-hover:text-maroon-600 dark:group-hover:text-gold-300" />
-              </a>
-            ))}
+          <div className="max-w-2xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950">
+            <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3 text-sm font-semibold text-gray-800 dark:border-gray-800 dark:text-gray-200">
+              <Instagram size={18} className="text-pink-500" /> PCTE official Instagram post
+            </div>
+            <iframe
+              title="Jasmine Sandlas performance carousel from PCTE official Instagram"
+              src="https://www.instagram.com/p/DeTwGLXk4VR/embed/"
+              className="h-[760px] w-full border-0"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
           </div>
         </section>
       )}

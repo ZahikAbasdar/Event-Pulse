@@ -149,8 +149,8 @@ an organizer has uploaded an authorized event photograph.*
 - PDF certificate generation and volunteer assignment tracking.
 - Organizer and participant notifications with Socket.IO.
 - Image and video gallery uploads.
-- The Jasmine Sandlas gallery links each item in the shared public Instagram
-  carousel from a separate card; Instagram hosts and controls the media.
+- The Jasmine Sandlas gallery embeds the shared public Instagram carousel so
+  its photos and videos can be browsed directly on the gallery page.
 - Student records and CSV/Excel analysis.
 - Admin console, audit logging, and EventPulse AI chat surfaces.
 - Optional official YouTube channel video listings through the YouTube Data
