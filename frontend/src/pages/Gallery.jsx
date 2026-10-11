@@ -42,6 +42,32 @@ export default function Gallery() {
           <button type="button" onClick={() => window.location.reload()} className="ml-2 font-semibold underline">Retry</button>
         </div>
       )}
+      {event?.slug === 'jasmine-sandlas-koshish-2026' && (
+        <section className="mt-6 max-w-lg">
+          <h2 className="mb-3 font-display text-lg font-bold text-gray-900 dark:text-white">Shared Instagram post</h2>
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800">
+            <iframe
+              title="Instagram post shared for the Jasmine Sandlas event"
+              src="https://www.instagram.com/p/DeTwGLXk4VR/embed/"
+              className="min-h-[540px] w-full"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            This post is embedded from Instagram and is not copied into EventPulse. If it does not load,{' '}
+            <a
+              href="https://www.instagram.com/p/DeTwGLXk4VR/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-maroon-600 underline dark:text-gold-400"
+            >
+              view it on Instagram
+            </a>.
+          </p>
+        </section>
+      )}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {media.map((m) => (
           <div key={m._id} className="overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-900">
