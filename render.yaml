@@ -39,3 +39,9 @@ services:
         value: 15
       - key: MAX_VOICE_FEEDBACK_MB
         value: 25
+      - key: AI_PROVIDER
+        value: gemini
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: AI_PROVIDER_API_KEY
+        sync: false

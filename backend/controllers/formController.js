@@ -14,6 +14,7 @@ const { getIO } = require('../utils/socket');
 const objectStorage = require('../utils/objectStorage');
 const getPublicBaseUrl = require('../utils/publicUrl');
 const ensureEventFeedbackForm = require('../utils/ensureEventFeedbackForm');
+const { generateText } = require('../utils/aiProvider');
 const { AUDIO_MIME_BY_EXTENSION, VIDEO_MIME_BY_EXTENSION } = require('../middleware/upload');
 
 const VOICE_FEEDBACK_DIR = path.resolve(__dirname, '..', process.env.VOICE_FEEDBACK_DIR || 'private/feedback-audio');
@@ -177,22 +178,12 @@ function buildTemplateQuestions(context) {
 }
 
 async function callAIForQuestions(context) {
-  const resp = await fetch(`${process.env.AI_PROVIDER_BASE_URL || 'https://api.anthropic.com'}/v1/messages`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.AI_PROVIDER_API_KEY, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1200,
-      messages: [
-        {
-          role: 'user',
-          content: `Generate exactly 10 feedback form questions for this event: "${context}". Return ONLY a JSON array, no prose, each item shaped like {"text": "...", "type": "rating|choice|open_text|nps", "options": ["..."] (only for choice), "required": true|false}.`,
-        },
-      ],
-    }),
+  const text = await generateText({
+    systemPrompt: 'Return only valid JSON, with no Markdown fences or explanatory text.',
+    userPrompt: `Generate exactly 10 feedback form questions for this event: "${context}". Return ONLY a JSON array, no prose, each item shaped like {"text": "...", "type": "rating|choice|open_text|nps", "options": ["..."] (only for choice), "required": true|false}.`,
+    maxOutputTokens: 1200,
+    responseMimeType: 'application/json',
   });
-  const data = await resp.json();
-  const text = (data.content || []).map((c) => c.text || '').join('');
   const clean = text.replace(/```json|```/g, '').trim();
   const parsed = JSON.parse(clean);
   if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('AI returned no usable questions');

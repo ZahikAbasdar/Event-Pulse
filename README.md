@@ -343,7 +343,7 @@ policy for participant information.
 | Capability | Environment variables | If not configured |
 |---|---|---|
 | YouTube channel video listings | None | The latest public uploads are read from PCTE's official YouTube feed. |
-| AI-assisted tools | `AI_PROVIDER_API_KEY`, optional `AI_PROVIDER_BASE_URL` | Provider-backed AI answers are unavailable. |
+| AI-assisted tools | `AI_PROVIDER=gemini`, `AI_PROVIDER_API_KEY`, optional `GEMINI_MODEL` | Provider-backed AI answers use Gemini when configured; otherwise the app uses its built-in fallback. |
 | Certificate email delivery | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_PORT`/`SMTP_FROM` | Generated certificates remain downloadable but are not emailed. |
 | Password recovery emails | `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, optional `SMTP_PORT`/`SMTP_FROM` | Configure SMTP and a sender address accepted by the provider; email-based password reset is unavailable until then. |
 | Persistent media/audio/video storage | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, optional bucket names | Local development falls back to local disk; production refuses to start without remote storage. Confirm the Supabase project is active, the URL is correct, both buckets exist, and credentials have upload/read access. |
@@ -351,6 +351,7 @@ policy for participant information.
 
 All backend configuration belongs in the ignored local `backend/.env` file.
 See [`backend/.env.example`](backend/.env.example) for the full template.
+To enable Gemini locally, create an API key in [Google AI Studio](https://aistudio.google.com/apikey), then set `AI_PROVIDER=gemini` and paste the key into `AI_PROVIDER_API_KEY` in `backend/.env`. For the live service, add the same variables under **Render → EventPulse service → Environment**, then redeploy. Keep the key server-side; never add it to frontend variables or commit it.
 
 ## 🗺️ App map
 

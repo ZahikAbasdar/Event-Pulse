@@ -4,6 +4,7 @@ const Form = require('../models/Form');
 const Ticket = require('../models/Ticket');
 const asyncHandler = require('../middleware/asyncHandler');
 const { ApiError } = require('../middleware/errorHandler');
+const { generateText } = require('../utils/aiProvider');
 
 /**
  * EventPulse AI — a thin wrapper around an external AI provider (configured via
@@ -14,18 +15,7 @@ const { ApiError } = require('../middleware/errorHandler');
 async function callAI(systemPrompt, userPrompt) {
   if (!process.env.AI_PROVIDER_API_KEY) return null;
   try {
-    const resp = await fetch(`${process.env.AI_PROVIDER_BASE_URL || 'https://api.anthropic.com'}/v1/messages`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.AI_PROVIDER_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 800,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-      }),
-    });
-    const data = await resp.json();
-    return (data.content || []).map((c) => c.text || '').join('').trim() || null;
+    return await generateText({ systemPrompt, userPrompt });
   } catch (err) {
     console.error('[EventPulse AI] provider call failed:', err.message);
     return null;
